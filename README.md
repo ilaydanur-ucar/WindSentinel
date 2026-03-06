@@ -1,6 +1,5 @@
-# WindSentinel
-Event-Driven Microservice Architecture for Early Fault Detection in Wind Turbines Using SCADA Data and Field Measurements
 # 🌬️ WIND Sentinel
+Event-Driven Microservice Architecture for Early Fault Detection in Wind Turbines Using SCADA Data and Field Measurements
 
 ## Nedir?
 
