@@ -1,4 +1,4 @@
-# WIND Sentinel
+# 🌀 WIND Sentinel
 
 AI-powered early fault detection system for wind turbines using event-driven microservice architecture.
 
@@ -37,6 +37,12 @@ Wind turbines experience unexpected failures that cause costly downtime. WIND Se
 | Message Broker | RabbitMQ |
 | Database | PostgreSQL |
 
+##  Dataset
+The SCADA data used in this project was sourced from Kaggle:
+
+**Wind Turbine SCADA Data for Early Fault Detection**
+- Source: https://www.kaggle.com/datasets/azizkasimov/wind-turbine-scada-data-for-early-fault-detection
+  
 ## Quick Start
 
 ```bash
