@@ -1,4 +1,4 @@
-# WIND Sentinel
+# 🌀 WIND Sentinel
 
 AI-powered early fault detection system for wind turbines using event-driven microservice architecture.
 
