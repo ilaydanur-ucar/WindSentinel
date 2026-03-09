@@ -8,44 +8,29 @@ Wind turbines experience unexpected failures that cause costly downtime. Traditi
 
 ## Solution Overview
 
+The system has two independent communication layers:
+- **RabbitMQ** — internal event bus between microservices
+- **API Gateway** — external interface for web/mobile clients
+
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌──────────────┐
-│   Mobile     │     │    Web       │     │   SCADA      │     │  Technician  │
-│   App        │     │   Dashboard  │     │  System      │     │  Manual Input│
-└──────┬───────┘     └──────┬───────┘     └──────┬───────┘     └──────┬───────┘
-       │                    │                    │                    │
-       └────────────────────┴────────────────────┴────────────────────┘
-                                    │
-                                    ▼
-                          ┌─────────────────┐
-                          │   API Gateway    │  ← REST + WebSocket
-                          │   (Node.js)      │
-                          └────────┬─────────┘
-                                   │
-                                   ▼
-                          ┌─────────────────┐
-                          │    RabbitMQ      │  ← Event Bus
-                          │  (Message Broker)│
-                          └────────┬─────────┘
-                    ┌──────────────┼──────────────┐
-                    ▼              ▼               ▼
-          ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-          │    Data       │ │   Feature    │ │  Prediction  │
-          │  Ingestion    │ │   Service    │ │   Service    │
-          │  (Python)     │ │  (Python)    │ │  (Python)    │
-          └──────────────┘ └──────────────┘ └──────┬───────┘
-                                                   │
-                                                   ▼
-                                          ┌──────────────┐
-                                          │ Notification │
-                                          │   Service    │
-                                          │  (Node.js)   │
-                                          └──────┬───────┘
-                                                 │
-                                    ┌────────────┴────────────┐
-                                    ▼                         ▼
-                              Web Dashboard            Mobile Push
-                              (Real-time)              Notification
+  ┌─────────── INTERNAL (RabbitMQ Event Bus) ───────────────────────┐
+  │                                                                  │
+  │  SCADA CSV ──→ data-ingestion ──→ feature-service ──→ prediction │
+  │                    │                                     │       │
+  │               [measurement.raw]              [prediction.result] │
+  │                                                     │            │
+  │                                              notification        │
+  │                                                │       │         │
+  └────────────────────────────────────────────────┼───────┼─────────┘
+                                                   │       │
+                                              WebSocket  WebSocket
+                                                   │       │
+  ┌─────────── EXTERNAL (API Gateway) ─────────────┼───────┼─────────┐
+  │                   REST + Auth                   │       │         │
+  │                   PostgreSQL                    │       │         │
+  └─────────────────────┬──────────────────────────────────┘─────────┘
+                        │                           │
+                  Web Dashboard               Mobile App
 ```
 
 ## How It Works (Data Pipeline)
