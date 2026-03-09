@@ -12,26 +12,25 @@ The system has two independent communication layers:
 - **RabbitMQ** — internal event bus between microservices
 - **API Gateway** — external interface for web/mobile clients
 
-## 🏗️ Architecture
-```mermaid
-flowchart TD
-    CSV["📁 SCADA CSV\n(Wind Farm A/B/C)"] --> DI
-
-    subgraph INTERNAL["🔧 INTERNAL — RabbitMQ Event Bus"]
-        DI["data-ingestion\nservice 🐍"] -->|measurement.raw| FS["feature-service 🐍"]
-        FS -->|features.ready| PS["prediction-service 🐍\nIsolation Forest"]
-        PS -->|prediction.result| NS["notification-service\n📢"]
-    end
-
-    subgraph EXTERNAL["🌐 EXTERNAL — API Gateway"]
-        AG["API Gateway\nREST + Auth + PostgreSQL"]
-    end
-
-    NS -->|WebSocket| WD["🖥️ Web Dashboard\nReact.js"]
-    NS -->|WebSocket| MA["📱 Mobile App\nExpo"]
-    AG <-->|REST| WD
-    AG <-->|REST| MA
-    MI["👷 Technician\nManual Input"] -->|POST /measurements| AG
+```
+  ┌─────────── INTERNAL (RabbitMQ Event Bus) ───────────────────────┐
+  │                                                                  │
+  │  SCADA CSV ──→ data-ingestion ──→ feature-service ──→ prediction │
+  │                    │                                     │       │
+  │               [measurement.raw]              [prediction.result] │
+  │                                                     │            │
+  │                                              notification        │
+  │                                                │       │         │
+  └────────────────────────────────────────────────┼───────┼─────────┘
+                                                   │       │
+                                              WebSocket  WebSocket
+                                                   │       │
+  ┌─────────── EXTERNAL (API Gateway) ─────────────┼───────┼─────────┐
+  │                   REST + Auth                   │       │         │
+  │                   PostgreSQL                    │       │         │
+  └─────────────────────┬──────────────────────────────────┘─────────┘
+                        │                           │
+                  Web Dashboard               Mobile App
 ```
 ## How It Works (Data Pipeline)
 
