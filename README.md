@@ -11,9 +11,10 @@ Wind turbines experience unexpected failures that cause costly downtime. Traditi
 The system has two independent communication layers:
 - **RabbitMQ** — internal event bus between microservices
 - **API Gateway** — external interface for web/mobile clients
-  
-  
-┌─────────── INTERNAL (RabbitMQ Event Bus) ───────────────────────┐
+
+
+##
+  ┌─────────── INTERNAL (RabbitMQ Event Bus) ───────────────────────┐
   │                                                                  │
   │  SCADA CSV ──→ data-ingestion ──→ feature-service ──→ prediction │
   │                    │                                     │       │
