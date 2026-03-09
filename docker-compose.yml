@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+
+  # ─────────────────────────────────────────
+  # MESSAGE BROKER
+  # ─────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: wind-sentinel-rabbitmq
+    ports:
+      - "5672:5672"       # AMQP (servisler buraya bağlanır)
+      - "15672:15672"     # Management UI → http://localhost:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  # ─────────────────────────────────────────
+  # DATABASE
+  # ─────────────────────────────────────────
+  postgres:
+    image: postgres:15
+    container_name: wind-sentinel-postgres
+    environment:
+      POSTGRES_DB: windsentinel
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5434:5432"    # 5434 dışarı (yerel PG ile çakışmasın), 5432 container içi
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d windsentinel"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # ─────────────────────────────────────────
+  # MICROSERVICES (Hafta 2'den itibaren aktif)
+  # ─────────────────────────────────────────
+
+  # data-ingestion-service:
+  #   build: ./services/data-ingestion-service
+  #   container_name: wind-sentinel-ingestion
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   environment:
+  #     RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+  #     SCADA_DATA_PATH: /data
+  #   volumes:
+  #     - ./data:/data
+
+  # feature-service:
+  #   build: ./services/feature-service
+  #   container_name: wind-sentinel-feature
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   environment:
+  #     RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+
+  # prediction-service:
+  #   build: ./services/prediction-service
+  #   container_name: wind-sentinel-prediction
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   environment:
+  #     RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+
+  # notification-service:
+  #   build: ./services/notification-service
+  #   container_name: wind-sentinel-notification
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     postgres:
+  #       condition: service_healthy
+  #   environment:
+  #     RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+  #     DATABASE_URL: postgresql://admin:admin123@postgres:5432/windsentinel
+  #   ports:
+  #     - "8003:8003"   # WebSocket
+
+  # api-gateway:
+  #   build: ./services/api-gateway
+  #   container_name: wind-sentinel-gateway
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   environment:
+  #     DATABASE_URL: postgresql://admin:admin123@postgres:5432/windsentinel
+  #     JWT_SECRET: supersecretkey123
+  #   ports:
+  #     - "8000:8000"
+
+volumes:
+  rabbitmq_data:
+  postgres_data:

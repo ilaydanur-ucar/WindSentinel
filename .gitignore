@@ -1,0 +1,28 @@
+# Environment variables
+.env
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data files (büyük dataset CSV'leri git'e girmemeli)
+data/raw/**/datasets/*.csv
+data/raw/**/*.parquet
+data/processed/**/*.csv
+data/processed/**/*.parquet
+
+# Docker volumes
+postgres_data/
+rabbitmq_data/
