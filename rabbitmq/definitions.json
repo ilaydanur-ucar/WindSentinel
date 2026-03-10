@@ -1,0 +1,125 @@
+{
+  "rabbit_version": "3.12",
+  "exchanges": [
+    {
+      "name": "wind.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false
+    },
+    {
+      "name": "wind.dlx",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false
+    }
+  ],
+  "queues": [
+    {
+      "name": "measurement.raw",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "wind.dlx",
+        "x-dead-letter-routing-key": "dlq.measurement.raw",
+        "x-message-ttl": 86400000
+      }
+    },
+    {
+      "name": "measurement.featured",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "wind.dlx",
+        "x-dead-letter-routing-key": "dlq.measurement.featured",
+        "x-message-ttl": 86400000
+      }
+    },
+    {
+      "name": "prediction.result",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "wind.dlx",
+        "x-dead-letter-routing-key": "dlq.prediction.result",
+        "x-message-ttl": 86400000
+      }
+    },
+    {
+      "name": "dlq.measurement.raw",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "dlq.measurement.featured",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "dlq.prediction.result",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "wind.events",
+      "vhost": "/",
+      "destination": "measurement.raw",
+      "destination_type": "queue",
+      "routing_key": "measurement.raw",
+      "arguments": {}
+    },
+    {
+      "source": "wind.events",
+      "vhost": "/",
+      "destination": "measurement.featured",
+      "destination_type": "queue",
+      "routing_key": "measurement.featured",
+      "arguments": {}
+    },
+    {
+      "source": "wind.events",
+      "vhost": "/",
+      "destination": "prediction.result",
+      "destination_type": "queue",
+      "routing_key": "prediction.result",
+      "arguments": {}
+    },
+    {
+      "source": "wind.dlx",
+      "vhost": "/",
+      "destination": "dlq.measurement.raw",
+      "destination_type": "queue",
+      "routing_key": "dlq.measurement.raw",
+      "arguments": {}
+    },
+    {
+      "source": "wind.dlx",
+      "vhost": "/",
+      "destination": "dlq.measurement.featured",
+      "destination_type": "queue",
+      "routing_key": "dlq.measurement.featured",
+      "arguments": {}
+    },
+    {
+      "source": "wind.dlx",
+      "vhost": "/",
+      "destination": "dlq.prediction.result",
+      "destination_type": "queue",
+      "routing_key": "dlq.prediction.result",
+      "arguments": {}
+    }
+  ]
+}
