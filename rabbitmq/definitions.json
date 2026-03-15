@@ -1,5 +1,12 @@
 {
   "rabbit_version": "3.12",
+  "users": [],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [],
   "exchanges": [
     {
       "name": "wind.events",

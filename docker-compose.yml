@@ -6,7 +6,7 @@ services:
   # MESSAGE BROKER
   # ─────────────────────────────────────────
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3.13-management-alpine
     container_name: wind-sentinel-rabbitmq
     ports:
       - "${RABBITMQ_PORT:-5672}:5672"
@@ -48,21 +48,23 @@ services:
     restart: unless-stopped
 
   # ─────────────────────────────────────────
-  # MICROSERVICES (Hafta 2'den itibaren aktif)
+  # MICROSERVICES
   # ─────────────────────────────────────────
 
-  # data-ingestion-service:
-  #   build: ./services/data-ingestion-service
-  #   container_name: wind-sentinel-ingestion
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #     RABBITMQ_URL: ${RABBITMQ_URL}
-  #     SCADA_DATA_PATH: /data
-  #   volumes:
-  #     - ./data:/data:ro
-  #   restart: unless-stopped
+  data-ingestion-service:
+    build: ./services/data-ingestion-service
+    container_name: wind-sentinel-ingestion
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      SCADA_DATA_PATH: /data
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./data:/data:ro
+    restart: unless-stopped
 
   # feature-service:
   #   build: ./services/feature-service
