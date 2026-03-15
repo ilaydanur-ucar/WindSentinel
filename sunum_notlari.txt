@@ -1,0 +1,256 @@
+================================================================================
+                    WINDSENTINEL - SUNUM NOTLARI
+          Rüzgar Türbini Anomali Tespit ve Erken Uyarı Sistemi
+================================================================================
+
+
+1. PROJE NEDİR?
+--------------------------------------------------------------------------------
+
+WindSentinel, rüzgar türbinlerinden gelen SCADA (Supervisory Control and Data
+Acquisition) verilerini gerçek zamanlı olarak analiz eden, makine öğrenmesi ile
+arızaları önceden tahmin eden ve mobil uygulama üzerinden teknisyenlere anlık
+bildirim gönderen bir erken uyarı sistemidir.
+
+Basitçe anlatmak gerekirse: Rüzgar türbinlerinin sensörlerinden gelen verileri
+sürekli izliyoruz. Eğer bir şey normalden farklıysa, arıza olmadan ÖNCE bunu
+tespit edip teknisyene haber veriyoruz.
+
+
+2. VERİ SETİ
+--------------------------------------------------------------------------------
+
+Kaynak: Wind Farm A (gerçek SCADA verileri)
+
+- 5 adet rüzgar türbini izleniyor (asset_id: 0, 10, 11, 13, 21)
+- Her 10 dakikada bir ölçüm alınıyor
+- Toplamda 54 farklı sensör var (sıcaklık, rüzgar hızı, güç, RPM vb.)
+- Veri seti "train" ve "test" olarak ayrılmış
+- Her ölçümde bir status_type_id var (0 = normal, diğerleri = arıza)
+
+Tespit edilen arıza tipleri:
+  - Hydraulic group arızası (5 kez) → Hidrolik sistem sorunları
+  - Generator bearing failure (2 kez) → Jeneratör yatak arızası
+  - Gearbox failure (2 kez) → Dişli kutusu arızası
+  - Gearbox bearings damaged (1 kez) → Dişli kutusu yatak hasarı
+  - Transformer failure (1 kez) → Trafo arızası
+
+
+3. KULLANILAN 6 TEMEL SENSÖR (FEATURE)
+--------------------------------------------------------------------------------
+
+54 sensör (81 kolon) arasından en kritik 6 tanesi, 5 farklı algoritma ile
+analiz edilerek seçildi. Kullanılan yöntemler:
+
+  - ANOVA F-Test (istatistiksel grup farkı)
+  - Mutual Information (bilgi teorisi - lineer olmayan ilişkiler)
+  - Random Forest Feature Importance (ağaç bazlı önem)
+  - Gradient Boosting Feature Importance (güçlendirilmiş ağaç)
+  - Spearman Korelasyon (monoton ilişki)
+
+Seçim kriteri: 5 yöntemin en az 4'ünde Top 10'a giren feature'lar alındı.
+6. feature (rüzgar hızı) 3/5 olmasına rağmen, F1 skorunu %82'den %88'e
+çıkardığı için dahil edildi.
+
+  1) Şebeke Gücü (power_30_avg) → kW — Konsensüs: 5/5
+     Türbinin şebekeye verdiği gerçek güç. Gradient Boosting'de tek başına
+     %50 importance taşıyor. En güçlü anomali göstergesi.
+
+  2) Toplam Aktif Güç (sensor_50) → Wh — Konsensüs: 5/5
+     Kümülatif enerji üretimi. Uzun vadeli üretim trendini gösterir.
+
+  3) İndüktif Reaktif Güç (reactive_power_28_avg) → kVAr — Konsensüs: 4/5
+     Şebeke ile türbin arasındaki elektriksel denge. Sapması jeneratör
+     veya trafo arızası habercisi.
+
+  4) Jeneratör RPM (sensor_18_avg) → rpm — Konsensüs: 4/5
+     Jeneratörün dönüş hızı. Dalgalanmalar bearing arızasına işaret eder.
+
+  5) Kapasitif Reaktif Güç (reactive_power_27_avg) → kVAr — Konsensüs: 4/5
+     Elektriksel stabilite göstergesi. İndüktif güç ile birlikte
+     dengesizlik tespiti sağlar.
+
+  6) Rüzgar Hızı (wind_speed_3_avg) → m/s — Konsensüs: 3/5
+     Tek başına anomaliyi ayırt etmez ama diğer feature'ların REFERANS
+     noktasıdır. "Bu rüzgarda bu güç normal mi?" sorusunun cevabı ancak
+     rüzgar hızı bilinince verilebilir.
+
+Performans: 6 feature ile F1 = 0.8836, tüm 81 feature ile F1 = 0.8855
+Fark sadece %0.2 — 6 feature yeterli ve verimli.
+
+
+4. MİKROSERVİS MİMARİSİ
+--------------------------------------------------------------------------------
+
+Neden mikroservis?
+  - Her servis bağımsız çalışır, biri çökerse diğerleri etkilenmez
+  - Her servis farklı dilde yazılabilir (Python ML için, Node.js API için)
+  - Ölçeklenebilir: Yük artarsa sadece o servisi büyütürsün
+
+Servisler:
+
+  [1] Data Ingestion Service (Python)
+      → SCADA CSV dosyalarını okur, parse eder
+      → RabbitMQ'ya "measurement.raw" kuyruğuna gönderir
+      → "Ben ham veriyi alıp sisteme sokan kapıyım"
+
+  [2] Feature Service (Python)
+      → Ham veriyi alır, zenginleştirir (feature engineering)
+      → Yeni özellikler türetir: güç katsayısı, RPM oranı, sıcaklık farkı
+      → "Ben ham veriyi anlamlı hale getiren mutfağım"
+
+  [3] Prediction Service (Python)
+      → Zenginleştirilmiş veriyi alır, ML modeli ile anomali tahmini yapar
+      → Anomali skoru (0-1) ve tip tahminini üretir
+      → "Ben verideki anormallikleri bulan beyinim"
+
+  [4] Notification Service (Node.js)
+      → Anomali tespit edilirse PostgreSQL'e kaydeder
+      → WebSocket ile mobil uygulamaya anlık bildirim gönderir
+      → "Ben alarm ziliyim, arıza varsa herkese haber veririm"
+
+  [5] API Gateway (Node.js)
+      → Dış dünyaya tek giriş noktası
+      → JWT ile kimlik doğrulama
+      → Tüm istekleri doğru servise yönlendirir
+      → "Ben binanın güvenlik görevlisiyim, kim gelirse kontrol ederim"
+
+
+5. VERİ AKIŞI (PIPELINE)
+--------------------------------------------------------------------------------
+
+  SCADA CSV → Data Ingestion → RabbitMQ → Feature Service → RabbitMQ
+                                                                ↓
+  Mobil Uygulama ← WebSocket ← Notification ← RabbitMQ ← Prediction
+
+Adım adım:
+  1. SCADA sensörleri 10 dk'da bir veri üretir
+  2. Data Ingestion bu veriyi okur, temizler, RabbitMQ'ya atar
+  3. Feature Service ham veriyi alır, yeni özellikler ekler, geri atar
+  4. Prediction Service zengin veriyi alır, ML ile analiz eder
+  5. Anomali varsa → Notification Service alert oluşturur
+  6. Alert → PostgreSQL'e kaydedilir + WebSocket ile telefona gönderilir
+
+
+6. KULLANILAN TEKNOLOJİLER
+--------------------------------------------------------------------------------
+
+  Backend (Veri İşleme):
+    - Python 3.11 → Veri işleme ve ML servisleri
+    - FastAPI → Python REST API framework
+    - Pandas → CSV okuma ve veri manipülasyonu
+    - Scikit-learn → Makine öğrenmesi (Isolation Forest, Random Forest)
+
+  Backend (API & Bildirim):
+    - Node.js 18 → API Gateway ve Notification servisleri
+    - Express.js → Node.js REST API framework
+    - Socket.IO → WebSocket (gerçek zamanlı bildirim)
+    - JSON Web Token (JWT) → Kimlik doğrulama
+
+  Mesaj Kuyruğu:
+    - RabbitMQ → Servisler arası asenkron iletişim
+    - AMQP protokolü → Mesaj gönderme/alma standardı
+    - Topic Exchange → Mesajları routing key'e göre yönlendirme
+
+  Veritabanı:
+    - PostgreSQL 15 → İlişkisel veritabanı (kullanıcılar, alert'ler, türbinler)
+
+  Mobil Uygulama:
+    - React Native (Expo) → Tek kod ile iOS + Android
+    - TypeScript → Tip güvenli JavaScript
+
+  Altyapı:
+    - Docker → Her servisi konteynerda çalıştırma
+    - Docker Compose → Tüm servisleri tek komutla ayağa kaldırma
+    - Git + GitHub → Versiyon kontrolü
+
+  Geliştirme Araçları:
+    - VS Code → Kod editörü
+    - Postman → API test
+    - RabbitMQ Management UI → Kuyruk izleme (localhost:15672)
+
+
+7. PROJE YAPISI
+--------------------------------------------------------------------------------
+
+  WindSentinel/
+  ├── data/                          # Veri dosyaları
+  │   ├── raw/Wind Farm A/           # Ham SCADA verileri
+  │   │   ├── datasets/              # Türbin CSV'leri (her biri ~50K satır)
+  │   │   ├── event_info.csv         # Arıza olayları listesi
+  │   │   └── feature_description.csv # Sensör açıklamaları
+  │   └── processed/                 # İşlenmiş veriler (sonra dolacak)
+  │
+  ├── services/                      # Mikroservisler
+  │   ├── data-ingestion-service/    # [Python] Veri alım servisi
+  │   ├── feature-service/           # [Python] Feature engineering
+  │   ├── prediction-service/        # [Python] ML anomali tespiti
+  │   ├── notification-service/      # [Node.js] Bildirim servisi
+  │   └── api-gateway/               # [Node.js] API yönlendirici
+  │
+  ├── mobile-app/                    # React Native (Expo) mobil uygulama
+  ├── rabbitmq/                      # RabbitMQ konfigürasyonu
+  │   ├── rabbitmq.conf              # RabbitMQ ayarları
+  │   └── definitions.json           # Queue/Exchange tanımları
+  ├── db/                            # Veritabanı
+  │   └── init.sql                   # PostgreSQL başlangıç şeması
+  ├── docs/                          # Dokümantasyon
+  │   ├── api-contracts.md           # API kontratları
+  │   └── feature-selection.md       # Feature seçim analizi
+  │
+  ├── docker-compose.yml             # Tüm servisleri ayağa kaldıran dosya
+  ├── .env                           # Ortam değişkenleri (şifreler vb.)
+  └── .gitignore                     # Git'e girmeyecek dosyalar
+
+
+8. HAFTALIK PLAN
+--------------------------------------------------------------------------------
+
+  Hafta 1-2: Planlama ve Mimari (ŞU AN BURADAYIZ)
+    ✓ Mikroservis sınırları ve API kontratları
+    ✓ Docker Compose + RabbitMQ konfigürasyonu
+    ✓ SCADA veri analizi ve 6 temel feature seçimi (5 algoritma ile)
+
+  Hafta 2-4: Veri Alımı ve Event Pipeline
+    - Data Ingestion Service yazımı
+    - SCADA CSV okuyucu
+    - RabbitMQ publish/consume pipeline testi
+
+  Hafta 4-6: Feature Engineering + ML Model
+    - Feature Service yazımı
+    - Prediction Service + Isolation Forest modeli
+    - Model eğitimi ve değerlendirmesi
+
+  Hafta 6-8: Bildirim ve API
+    - Notification Service + WebSocket
+    - API Gateway + JWT Auth
+    - PostgreSQL entegrasyonu
+
+  Hafta 8-10: Mobil Uygulama
+    - React Native (Expo) ile dashboard
+    - Türbin listesi, alert görüntüleme
+    - Gerçek zamanlı bildirimler
+
+  Hafta 10-12: Entegrasyon ve Test
+    - Tüm servislerin birlikte testi
+    - Performance optimizasyonu
+    - Final sunum hazırlığı
+
+
+9. NEDEN BU PROJEYİ YAPTIK?
+--------------------------------------------------------------------------------
+
+Problem: Rüzgar türbinleri arızalandığında tamir maliyeti çok yüksek ve
+enerji üretimi durur. Geleneksel bakım yöntemleri reaktiftir — arıza olduktan
+SONRA müdahale edilir.
+
+Çözüm: WindSentinel ile prediktif (öngörücü) bakım yapıyoruz. Sensör
+verilerini sürekli analiz ederek arızayı OLMADAN ÖNCE tespit ediyoruz.
+
+Faydaları:
+  - Plansız duruş süresi azalır (downtime reduction)
+  - Bakım maliyetleri düşer (proactive vs reactive)
+  - Enerji üretim verimliliği artar
+  - Teknisyenler anlık bildirimle hızlı müdahale eder
+
+================================================================================
