@@ -66,15 +66,17 @@ services:
       - ./data:/data:ro
     restart: unless-stopped
 
-  # feature-service:
-  #   build: ./services/feature-service
-  #   container_name: wind-sentinel-feature
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #     RABBITMQ_URL: ${RABBITMQ_URL}
-  #   restart: unless-stopped
+  feature-service:
+    build: ./services/feature-service
+    container_name: wind-sentinel-feature
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    ports:
+      - "8002:8002"
+    restart: unless-stopped
 
   # prediction-service:
   #   build: ./services/prediction-service

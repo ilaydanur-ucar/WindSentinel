@@ -1,0 +1,27 @@
+# ────────────────────────────────────────────────────────────
+# .dockerignore — Güvenlik ve Optimizasyon
+# ────────────────────────────────────────────────────────────
+
+# GÜVENLİK (Hassas Veriler Asla Image İçine Götürülemez)
+.env
+.env.*
+*.pem
+*.key
+*.cer
+
+# Geliştirme Önbellekleri (Optimizasyon / Boyut Küçültme)
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Git verileri
+.git/
+.gitignore
+
+# IDE / Editör
+.vscode/
+.idea/
+*.swp

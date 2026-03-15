@@ -1,0 +1,13 @@
+# ────────────────────────────────────────────────────────────
+# requirements.txt — Servis Bağımlılıkları (Pinned Versions)
+# ────────────────────────────────────────────────────────────
+# OWASP A06: Vulnerable and Outdated Components kuralı gereği:
+# Versiyonlar "==" ile kilitlenmelidir (pinned). >= kullanımı 
+# beklenmedik kütüphane güncellemelerinde sistemi bozabilir.
+
+fastapi==0.110.0
+uvicorn==0.28.0
+pydantic==2.6.3
+pydantic-settings==2.2.1
+aio-pika==9.4.1
+pandas==2.2.1
