@@ -91,20 +91,17 @@ services:
     ports:
       - "8003:8000"
     restart: unless-stopped
-  # notification-service:
-  #   build: ./services/notification-service
-  #   container_name: wind-sentinel-notification
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #     postgres:
-  #       condition: service_healthy
-  #   environment:
-  #     RABBITMQ_URL: ${RABBITMQ_URL}
-  #     DATABASE_URL: ${DATABASE_URL}
-  #   ports:
-  #     - "${NOTIFICATION_PORT:-8003}:8003"
-  #   restart: unless-stopped
+  notification-service:
+    build: ./services/notification-service
+    container_name: wind-sentinel-notification
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    ports:
+      - "8004:8000"
+    restart: unless-stopped
 
   # api-gateway:
   #   build: ./services/api-gateway

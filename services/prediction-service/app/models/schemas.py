@@ -32,6 +32,9 @@ class PredictionResult(BaseModel):
 
     timestamp: datetime = Field(..., description="Ölçümün/Tahminin yapıldığı zaman")
     is_anomaly: bool = Field(..., description="Hata/Anomali tespit edildi mi?")
-    anomaly_score: float = Field(..., description="Modelin anomali/güven skoru (0.0 - 1.0 arası veya -1.0 ile 1.0 arası değişebilir)")
+    anomaly_score: float = Field(..., description="Isolaton Forest normalize skoru")
+    confidence: float = Field(..., description="Hibrit model (Ensemble) güven skoru")
+    severity: str = Field(default="INFO", description="Anomali ciddiyet seviyesi (CRITICAL, WARNING, INFO)")
     model_version: str = Field(..., description="Tahmini yapan modelin versiyon bilgisi")
-    details: Dict[str, Any] = Field(default_factory=dict, description="Ekstra hata detayları veya feature bazlı model analizleri")
+    fault_type: str = Field(default="unknown", description="Tahmin edilen hata türü")
+    details: Dict[str, Any] = Field(default_factory=dict, description="Ekstra hata detayları")

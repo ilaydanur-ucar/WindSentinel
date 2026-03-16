@@ -70,16 +70,29 @@ class MLPredictor(BasePredictor):
             final_score = (0.6 * iso_score) + (0.4 * xgb_prob)
             is_anomaly = final_score > ANOMALY_THRESHOLD
 
+            # Severity Determination
+            from app.core.feature_columns import SEVERITY_THRESHOLD_CRITICAL, SEVERITY_THRESHOLD_WARNING
+            
+            severity = "INFO"
+            if final_score > SEVERITY_THRESHOLD_CRITICAL:
+                severity = "CRITICAL"
+            elif final_score > SEVERITY_THRESHOLD_WARNING:
+                severity = "WARNING"
+
             end_time = time.perf_counter()
             inference_ms = (end_time - start_time) * 1000
             
             if inference_ms > 100: # 100ms kritik eşik (Latency)
                 logger.warning(f"YÜKSEK GECİKME: Prediction took {inference_ms:.2f}ms")
 
+            from datetime import datetime
             return PredictionResult(
+                timestamp=datetime.now(),
                 is_anomaly=is_anomaly,
-                confidence=round(final_score, 4),
-                anomaly_score=round(iso_score, 4),
+                confidence=round(float(final_score), 4),
+                anomaly_score=round(float(iso_score), 4),
+                severity=severity,
+                model_version="v1.0-real",
                 fault_type="generic_anomaly" if is_anomaly else "normal"
             )
 

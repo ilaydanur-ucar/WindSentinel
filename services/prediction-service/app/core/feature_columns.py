@@ -11,6 +11,10 @@ FEATURE_COLUMNS = [
     "power_error"
 ]
 
-# Hibrit skor (0.6*Iso + 0.4*XGB) için eşik değeri. 
-# EDA aşamasında veriyle doğrulanıp güncellenebilir.
-ANOMALY_THRESHOLD: float = 0.63
+# Hibrit skor (0.6*Iso + 0.4*XGB) için eşik değerleri.
+# EDA aşamasında veriyle doğrulanıp güncellenmiştir.
+ANOMALY_THRESHOLD: float = 0.63 # Genel anomali sınırı
+
+# Alarm Severity Eşikleri
+SEVERITY_THRESHOLD_CRITICAL: float = 0.90
+SEVERITY_THRESHOLD_WARNING: float = 0.63
