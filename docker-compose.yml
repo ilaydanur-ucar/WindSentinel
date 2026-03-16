@@ -78,16 +78,19 @@ services:
       - "8002:8002"
     restart: unless-stopped
 
-  # prediction-service:
-  #   build: ./services/prediction-service
-  #   container_name: wind-sentinel-prediction
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #     RABBITMQ_URL: ${RABBITMQ_URL}
-  #   restart: unless-stopped
-
+  prediction-service:
+    build: ./services/prediction-service
+    container_name: wind-sentinel-prediction
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_HOST: wind-sentinel-rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASS}
+    ports:
+      - "8003:8000"
+    restart: unless-stopped
   # notification-service:
   #   build: ./services/notification-service
   #   container_name: wind-sentinel-notification

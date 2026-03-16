@@ -24,6 +24,11 @@ data/raw/**/*.parquet
 data/processed/**/*.csv
 data/processed/**/*.parquet
 
+# ML Models (Ağır dosyaların repo şişirmesini engellemek için)
+services/prediction-service/models_data/*.pkl
+services/prediction-service/models_data/*.joblib
+services/prediction-service/models_data/*.onnx
+
 # Docker volumes
 postgres_data/
 rabbitmq_data/
