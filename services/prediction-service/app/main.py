@@ -6,12 +6,22 @@ from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.infrastructure.rabbitmq_client import RabbitMQClient
+from app.ml.ml_predictor import MLPredictor
 from app.ml.dummy_predictor import DummyPredictor
 from app.services.orchestrator import PredictionOrchestrator
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Dependency'lerin Instance'larını hazırlayalım
-# İleride DummyPredictor yerine XGBoostPredictor eklendiğinde sadece buradaki satir değişecek (OCP)
-predictor_instance = DummyPredictor()
+# MLPredictor loading (with Fallback to Dummy for dev ease)
+try:
+    predictor_instance = MLPredictor()
+    logger.info("Real MLPredictor initialized successfully.")
+except Exception as e:
+    logger.warning(f"MLPredictor yüklenemedi, DummyPredictor kullanılıyor: {e}")
+    predictor_instance = DummyPredictor()
+
 rabbitmq_client_instance = RabbitMQClient()
 orchestrator = PredictionOrchestrator(
     rabbitmq_client=rabbitmq_client_instance,

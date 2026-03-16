@@ -28,6 +28,8 @@ data/processed/**/*.parquet
 services/prediction-service/models_data/*.pkl
 services/prediction-service/models_data/*.joblib
 services/prediction-service/models_data/*.onnx
+services/prediction-service/models_data/*.json
+services/prediction-service/models_data/checksums.json
 
 # Docker volumes
 postgres_data/
