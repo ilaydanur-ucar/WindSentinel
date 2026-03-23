@@ -88,6 +88,8 @@ class MLPredictor(BasePredictor):
             from datetime import datetime
             return PredictionResult(
                 timestamp=datetime.now(),
+                asset_id=features.asset_id,
+                turbine_id=features.turbine_id,
                 is_anomaly=is_anomaly,
                 confidence=round(float(final_score), 4),
                 anomaly_score=round(float(iso_score), 4),

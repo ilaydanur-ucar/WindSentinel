@@ -24,7 +24,7 @@ class LogNotifier(BaseNotifier):
                 prefix = "⚠️ [WARNING]"
 
             log_msg = (
-                f"{prefix} Asset: {alarm.asset_id or 'Unknown'} | "
+                f"{prefix} Turbine: {alarm.turbine_id} (asset:{alarm.asset_id}) | "
                 f"Type: {alarm.fault_type} | "
                 f"Score: {alarm.confidence:.2f} | "
                 f"Time: {alarm.timestamp}"

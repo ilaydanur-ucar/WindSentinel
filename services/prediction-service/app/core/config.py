@@ -11,9 +11,9 @@ class Settings(BaseSettings):
     RABBITMQ_USER: str = os.getenv("RABBITMQ_USER", "guest")
     RABBITMQ_PASSWORD: str = os.getenv("RABBITMQ_PASSWORD", "guest")
     
-    # Kuyruk İsimleri
-    RABBITMQ_CONSUME_QUEUE: str = "measurement.features"
-    RABBITMQ_PUBLISH_QUEUE: str = "prediction.alerts"
+    # Kuyruk İsimleri (definitions.json ile eşleşmeli)
+    RABBITMQ_CONSUME_QUEUE: str = "measurement.featured"
+    RABBITMQ_PUBLISH_QUEUE: str = "prediction.result"
 
     # Model Ayarları
     MODEL_TYPE: str = os.getenv("MODEL_TYPE", "dummy") # dummy, xgboost, isolation_forest vb.

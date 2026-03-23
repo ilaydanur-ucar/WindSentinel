@@ -25,7 +25,7 @@ class RabbitMQConsumer:
 
     def _should_suppress(self, alarm: AlarmMessage) -> bool:
         """Aynı alarmın cooldown süresi içinde gelip gelmediğini kontrol eder."""
-        key = (alarm.asset_id or "global", alarm.fault_type)
+        key = (alarm.turbine_id, alarm.fault_type)
         current_time = time.time()
         
         if key in self._last_notified:

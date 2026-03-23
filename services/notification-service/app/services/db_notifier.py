@@ -40,8 +40,8 @@ class DatabaseNotifier(BaseNotifier):
 
             # Adım 1: DB'ye yaz (Altın Kural 1)
             alert_record = await db_client.insert_alert(
-                turbine_id=alarm.asset_id or "UNKNOWN",
-                asset_id=int(alarm.asset_id) if alarm.asset_id and alarm.asset_id.isdigit() else 0,
+                turbine_id=alarm.turbine_id,
+                asset_id=alarm.asset_id,
                 anomaly_type=alarm.fault_type,
                 anomaly_score=alarm.anomaly_score,
                 confidence=alarm.confidence,

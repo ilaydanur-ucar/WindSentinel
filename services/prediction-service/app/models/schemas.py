@@ -1,40 +1,50 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from datetime import datetime
+
 
 class FeatureMessage(BaseModel):
     """
-    RabbitMQ'dan ('measurement.features' kuyruğundan) gelecek olan verinin şeması.
-    feature-service'in ürettiği veriyi temsil eder.
+    Feature Service'in ürettiği zenginleştirilmiş veri şeması.
+    feature-service/app/schemas.py → FeatureMessage ile BİREBİR eşleşmeli.
     """
-    model_config = ConfigDict(extra="forbid") # Güvenlik: Beklenmeyen alanları reddet (OWASP)
+    model_config = ConfigDict(extra="forbid")
 
-    timestamp: datetime = Field(..., description="Ölçümün yapıldığı zaman")
-    # Aşağıdakiler feature-service'den gelecek temel feature'lara birer örnektir.
-    # Gerçek feature listesine göre burası genişletilebilir.
-    wind_speed: float = Field(..., description="Rüzgar Hızı (m/s)")
-    active_power: float = Field(..., description="Aktif Güç (kW)")
-    wind_direction: float = Field(..., description="Rüzgar Yönü (°)")
-    theoretical_power_curve: float = Field(..., description="Teorik Güç Eğrisi Değeri")
-    
-    # feature-service'de ürettiğimiz istatistiksel / rolling özellikler
-    wind_speed_rolling_mean: float = Field(..., description="Rüzgar Hızı Hareketli Ortalaması")
-    wind_speed_rolling_std: float = Field(..., description="Rüzgar Hızı Standart Sapması")
-    power_error: float = Field(..., description="Teorik Güç ile Aktif Güç Arasındaki Fark")
+    # ── Meta Bilgiler ──
+    timestamp: str = Field(..., description="Ölçüm zamanı (ISO 8601)")
+    asset_id: int = Field(..., description="Türbin asset numarası")
+    turbine_id: str = Field(..., description="Türbin kodu (ör: WFA-T00)")
+    status_type_id: int = Field(..., description="Durum tipi (0=normal)")
+
+    # ── 6 Temel Sensör ──
+    wind_speed: float = Field(..., description="Rüzgar hızı (m/s)")
+    power_output: float = Field(..., description="Şebeke gücü (kW)")
+    generator_rpm: float = Field(..., description="Jeneratör RPM")
+    total_active_power: float = Field(..., description="Toplam aktif güç (Wh)")
+    reactive_power_inductive: float = Field(..., description="İndüktif reaktif güç (kVAr)")
+    reactive_power_capacitive: float = Field(..., description="Kapasitif reaktif güç (kVAr)")
+
+    # ── Türetilmiş Özellikler (Feature Engineering) ──
+    power_factor: float = Field(..., description="Güç faktörü")
+    rpm_ratio: float = Field(..., description="Jeneratör / Rotor RPM oranı")
+    reactive_power_balance: float = Field(..., description="Reaktif güç dengesi")
+    power_to_wind_ratio: float = Field(..., description="Rüzgar hızına göre güç verimliliği")
 
 
 class PredictionResult(BaseModel):
     """
-    Modelin tahmin sonucunu temsil eden şema.
-    Eğer anomali ise 'prediction.alerts' kuyruğuna yollanacak verinin şeması.
+    ML model tahmin sonucu. Anomali ise prediction.result kuyruğuna yollanır.
+    Notification Service'in AlarmMessage şemasıyla uyumlu olmalı.
     """
     model_config = ConfigDict(extra="forbid")
 
-    timestamp: datetime = Field(..., description="Ölçümün/Tahminin yapıldığı zaman")
-    is_anomaly: bool = Field(..., description="Hata/Anomali tespit edildi mi?")
-    anomaly_score: float = Field(..., description="Isolaton Forest normalize skoru")
-    confidence: float = Field(..., description="Hibrit model (Ensemble) güven skoru")
-    severity: str = Field(default="INFO", description="Anomali ciddiyet seviyesi (CRITICAL, WARNING, INFO)")
-    model_version: str = Field(..., description="Tahmini yapan modelin versiyon bilgisi")
+    timestamp: datetime = Field(..., description="Tahmin zamanı")
+    asset_id: int = Field(..., description="Türbin asset numarası")
+    turbine_id: str = Field(..., description="Türbin kodu")
+    is_anomaly: bool = Field(..., description="Anomali tespit edildi mi?")
+    anomaly_score: float = Field(..., description="Isolation Forest normalize skoru")
+    confidence: float = Field(..., description="Hibrit model güven skoru")
+    severity: str = Field(default="INFO", description="CRITICAL / WARNING / INFO")
+    model_version: str = Field(..., description="Model versiyon bilgisi")
     fault_type: str = Field(default="unknown", description="Tahmin edilen hata türü")
-    details: Dict[str, Any] = Field(default_factory=dict, description="Ekstra hata detayları")
+    details: Dict[str, Any] = Field(default_factory=dict, description="Ekstra detaylar")
