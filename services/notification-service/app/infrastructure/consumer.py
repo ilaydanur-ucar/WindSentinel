@@ -72,7 +72,15 @@ class RabbitMQConsumer:
                 # QoS: Bir kerede kaç mesaj işlenebilir
                 await self.channel.set_qos(prefetch_count=10)
                 
-                queue = await self.channel.declare_queue(settings.QUEUE_NAME, durable=True)
+                queue = await self.channel.declare_queue(
+                    settings.QUEUE_NAME,
+                    durable=True,
+                    arguments={
+                        "x-dead-letter-exchange": "wind.dlx",
+                        "x-dead-letter-routing-key": "dlq.prediction.result",
+                        "x-message-ttl": 86400000,
+                    },
+                )
                 
                 logger.info(f"Notification Service kuyruğu dinliyor: {settings.QUEUE_NAME}")
                 await queue.consume(self.process_message)
