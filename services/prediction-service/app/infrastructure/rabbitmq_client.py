@@ -19,10 +19,18 @@ class RabbitMQClient:
                 self.channel = await self.connection.channel()
                 
                 # Sadece anomali olan mesajlar publish edilecek queue
-                await self.channel.declare_queue(settings.RABBITMQ_PUBLISH_QUEUE, durable=True)
+                await self.channel.declare_queue(
+                    settings.RABBITMQ_PUBLISH_QUEUE,
+                    durable=True,
+                    arguments={"x-message-ttl": 86400000},
+                )
                 
                 # Consume edeceğimiz (feature-service'den gelen) queue
-                await self.channel.declare_queue(settings.RABBITMQ_CONSUME_QUEUE, durable=True)
+                await self.channel.declare_queue(
+                    settings.RABBITMQ_CONSUME_QUEUE,
+                    durable=True,
+                    arguments={"x-message-ttl": 86400000},
+                )
                 
                 print(f"RabbitMQ Connection Successful. Connected to {settings.RABBITMQ_HOST}")
                 return
@@ -48,7 +56,9 @@ class RabbitMQClient:
         # Sistem her seferinde sadece 1 mesaj alır ve işler. Bu latency'i düşürür, bellek taşmasını önler.
         await self.channel.set_qos(prefetch_count=1)
 
-        queue = await self.channel.declare_queue(queue_name, durable=True)
+        queue = await self.channel.declare_queue(
+            queue_name, durable=True, arguments={"x-message-ttl": 86400000}
+        )
         
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:

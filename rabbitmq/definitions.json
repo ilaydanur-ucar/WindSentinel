@@ -77,6 +77,15 @@
       "durable": true,
       "auto_delete": false,
       "arguments": {}
+    },
+    {
+      "name": "alert.notify",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000
+      }
     }
   ],
   "bindings": [
@@ -126,6 +135,14 @@
       "destination": "dlq.prediction.result",
       "destination_type": "queue",
       "routing_key": "dlq.prediction.result",
+      "arguments": {}
+    },
+    {
+      "source": "wind.events",
+      "vhost": "/",
+      "destination": "alert.notify",
+      "destination_type": "queue",
+      "routing_key": "alert.notify",
       "arguments": {}
     }
   ]
