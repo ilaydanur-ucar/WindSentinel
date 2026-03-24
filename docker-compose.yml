@@ -136,6 +136,19 @@ services:
       retries: 5
     restart: unless-stopped
 
+  web-dashboard:
+    build:
+      context: ./web-dashboard
+      args:
+        VITE_API_URL: http://localhost:8000
+    container_name: wind-sentinel-web
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
 volumes:
   rabbitmq_data:
   postgres_data:
