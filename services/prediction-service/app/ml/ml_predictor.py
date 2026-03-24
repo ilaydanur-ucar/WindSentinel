@@ -9,7 +9,7 @@ from typing import Dict, Any
 
 from app.ml.base import BasePredictor
 from app.models.schemas import FeatureMessage, PredictionResult
-from app.core.feature_columns import FEATURE_COLUMNS, ANOMALY_THRESHOLD
+from app.core.feature_columns import FEATURE_COLUMNS, ANOMALY_THRESHOLD, ISO_WEIGHT, XGB_WEIGHT
 from app.core.security import verify_file_checksum
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class MLPredictor(BasePredictor):
             iso_score = self._get_iso_normalized(input_vector)
             xgb_prob = float(self.xgb_model.predict_proba(input_vector)[0][1])
 
-            final_score = (0.6 * iso_score) + (0.4 * xgb_prob)
+            final_score = (ISO_WEIGHT * iso_score) + (XGB_WEIGHT * xgb_prob)
             is_anomaly = final_score > ANOMALY_THRESHOLD
 
             # Severity Determination

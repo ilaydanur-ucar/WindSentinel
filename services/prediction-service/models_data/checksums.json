@@ -1,4 +1,4 @@
 {
-    "isolation_forest.pkl": "52b70bb082907d6489f2b347ce4db6813495b21da13e7c4c4e88f1297ede6a2e",
-    "xgboost_model.json": "6c5ecf03f9675810ed8a8632cac9113172edbe9d6a79b0c22cda5b09bc1b7afb"
+    "isolation_forest.pkl": "4d7d75741f746827f784135a4e8abb03d32273321ed863b81aa591abcc0abcd9",
+    "xgboost_model.json": "8f1dec151472a386e51495a34f51b5ff111a5ac94aabd171dc9dc11c71ca1e70"
 }
