@@ -1,0 +1,43 @@
+{
+    "feature_columns": [
+        "wind_speed",
+        "power_output",
+        "generator_rpm",
+        "total_active_power",
+        "reactive_power_inductive",
+        "reactive_power_capacitive",
+        "power_factor",
+        "rpm_ratio",
+        "reactive_power_balance",
+        "power_to_wind_ratio",
+        "power_output_rolling_mean",
+        "power_output_rolling_std",
+        "power_output_delta",
+        "generator_rpm_rolling_mean",
+        "generator_rpm_rolling_std",
+        "generator_rpm_delta",
+        "wind_speed_rolling_mean",
+        "wind_speed_rolling_std",
+        "wind_speed_delta",
+        "power_deviation"
+    ],
+    "base_features": [
+        "wind_speed",
+        "power_output",
+        "generator_rpm",
+        "total_active_power",
+        "reactive_power_inductive",
+        "reactive_power_capacitive",
+        "power_factor",
+        "rpm_ratio",
+        "reactive_power_balance",
+        "power_to_wind_ratio"
+    ],
+    "anomaly_threshold": 0.3506849651882791,
+    "severity_warning": 0.3506849651882791,
+    "severity_critical": 0.6267511463605339,
+    "iso_weight": 0.5,
+    "xgb_weight": 0.5,
+    "lead_time_hours": 24,
+    "rolling_window": 6
+}

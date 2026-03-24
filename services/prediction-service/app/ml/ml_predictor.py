@@ -9,7 +9,10 @@ from typing import Dict, Any
 
 from app.ml.base import BasePredictor
 from app.models.schemas import FeatureMessage, PredictionResult
-from app.core.feature_columns import FEATURE_COLUMNS, ANOMALY_THRESHOLD, ISO_WEIGHT, XGB_WEIGHT
+from app.core.feature_columns import (
+    FEATURE_COLUMNS, BASE_FEATURES, ANOMALY_THRESHOLD,
+    ISO_WEIGHT, XGB_WEIGHT, SEVERITY_THRESHOLD_CRITICAL, SEVERITY_THRESHOLD_WARNING,
+)
 from app.core.security import verify_file_checksum
 
 logger = logging.getLogger(__name__)
@@ -59,48 +62,67 @@ class MLPredictor(BasePredictor):
         raw_score = self.iso_forest.decision_function(X)[0]
         return 1 / (1 + np.exp(raw_score))
 
-    def predict(self, features: FeatureMessage) -> PredictionResult:
+    def _run_prediction(self, input_vector: np.ndarray, features: FeatureMessage) -> PredictionResult:
+        """Ortak tahmin mantigi: ensemble skor -> severity -> PredictionResult"""
         start_time = time.perf_counter()
+
+        iso_score = self._get_iso_normalized(input_vector)
+        xgb_prob = float(self.xgb_model.predict_proba(input_vector)[0][1])
+
+        final_score = (ISO_WEIGHT * iso_score) + (XGB_WEIGHT * xgb_prob)
+        is_anomaly = final_score > ANOMALY_THRESHOLD
+
+        severity = "INFO"
+        if final_score > SEVERITY_THRESHOLD_CRITICAL:
+            severity = "CRITICAL"
+        elif final_score > SEVERITY_THRESHOLD_WARNING:
+            severity = "WARNING"
+
+        inference_ms = (time.perf_counter() - start_time) * 1000
+        if inference_ms > 100:
+            logger.warning(f"YUKSEK GECIKME: Prediction took {inference_ms:.2f}ms")
+
+        from datetime import datetime
+        return PredictionResult(
+            timestamp=datetime.now(),
+            asset_id=features.asset_id,
+            turbine_id=features.turbine_id,
+            is_anomaly=is_anomaly,
+            confidence=round(float(final_score), 4),
+            anomaly_score=round(float(iso_score), 4),
+            severity=severity,
+            model_version="v3.0-leadtime",
+            fault_type="generic_anomaly" if is_anomaly else "normal",
+        )
+
+    def predict(self, features: FeatureMessage) -> PredictionResult:
+        """Sadece base feature'larla tahmin (fallback)."""
         try:
-            input_vector = np.array([[getattr(features, f) for f in FEATURE_COLUMNS]], dtype=np.float32)
-
-            iso_score = self._get_iso_normalized(input_vector)
-            xgb_prob = float(self.xgb_model.predict_proba(input_vector)[0][1])
-
-            final_score = (ISO_WEIGHT * iso_score) + (XGB_WEIGHT * xgb_prob)
-            is_anomaly = final_score > ANOMALY_THRESHOLD
-
-            # Severity Determination
-            from app.core.feature_columns import SEVERITY_THRESHOLD_CRITICAL, SEVERITY_THRESHOLD_WARNING
-            
-            severity = "INFO"
-            if final_score > SEVERITY_THRESHOLD_CRITICAL:
-                severity = "CRITICAL"
-            elif final_score > SEVERITY_THRESHOLD_WARNING:
-                severity = "WARNING"
-
-            end_time = time.perf_counter()
-            inference_ms = (end_time - start_time) * 1000
-            
-            if inference_ms > 100: # 100ms kritik eşik (Latency)
-                logger.warning(f"YÜKSEK GECİKME: Prediction took {inference_ms:.2f}ms")
-
-            from datetime import datetime
-            return PredictionResult(
-                timestamp=datetime.now(),
-                asset_id=features.asset_id,
-                turbine_id=features.turbine_id,
-                is_anomaly=is_anomaly,
-                confidence=round(float(final_score), 4),
-                anomaly_score=round(float(iso_score), 4),
-                severity=severity,
-                model_version="v1.0-real",
-                fault_type="generic_anomaly" if is_anomaly else "normal"
+            input_vector = np.array(
+                [[getattr(features, f, 0.0) for f in FEATURE_COLUMNS]], dtype=np.float32
             )
-
+            return self._run_prediction(input_vector, features)
         except Exception as e:
-            logger.error(f"Tahmin sırasında hata oluştu: {e}")
-            raise e
+            logger.error(f"Tahmin hatasi: {e}")
+            raise
+
+    def predict_with_ts(self, features: FeatureMessage, ts_features: dict) -> PredictionResult:
+        """Base + time-series feature'larla tahmin (20 feature)."""
+        try:
+            values = []
+            for f in FEATURE_COLUMNS:
+                if hasattr(features, f):
+                    values.append(getattr(features, f))
+                elif f in ts_features:
+                    values.append(ts_features[f])
+                else:
+                    values.append(0.0)
+
+            input_vector = np.array([values], dtype=np.float32)
+            return self._run_prediction(input_vector, features)
+        except Exception as e:
+            logger.error(f"Tahmin hatasi (with_ts): {e}")
+            raise
 
     def get_model_info(self) -> Dict[str, Any]:
         return {

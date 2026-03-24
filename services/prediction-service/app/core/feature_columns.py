@@ -1,30 +1,33 @@
 # Pipeline ile uyumlu feature listesi.
-# 6 ham sensor (feature-selection.md 5-algoritma konsensus) + 4 turetilmis ozellik.
+# 6 ham sensor + 4 turetilmis + 10 time-series = 20 feature
 # Sutun sirasinin korunmasi modelin dogru tahmin yapmasi icin KRITIKTIR.
 
-FEATURE_COLUMNS = [
-    # 6 temel sensor (Data Ingestion -> Feature Service'den gecen)
-    "wind_speed",                 # wind_speed_3_avg  (3/5 konsensus)
-    "power_output",               # power_30_avg      (5/5 konsensus)
-    "generator_rpm",              # sensor_18_avg     (4/5 konsensus)
-    "total_active_power",         # sensor_50         (5/5 konsensus)
-    "reactive_power_inductive",   # reactive_power_28 (4/5 konsensus)
-    "reactive_power_capacitive",  # reactive_power_27 (4/5 konsensus)
-    # 4 turetilmis ozellik (Feature Service'in urettigi)
-    "power_factor",               # total_active_power / (inductive + capacitive)
-    "rpm_ratio",                  # generator_rpm / rotor_rpm
-    "reactive_power_balance",     # inductive - capacitive
-    "power_to_wind_ratio",        # power_output / wind_speed
+# Feature Service'den gelen base feature'lar
+BASE_FEATURES = [
+    "wind_speed", "power_output", "generator_rpm",
+    "total_active_power", "reactive_power_inductive", "reactive_power_capacitive",
+    "power_factor", "rpm_ratio", "reactive_power_balance", "power_to_wind_ratio",
 ]
 
-# Ensemble agirliklari (notebook'tan optimize edilmis)
-# IsoForest=0.1, XGBoost=0.9
-ISO_WEIGHT: float = 0.1
-XGB_WEIGHT: float = 0.9
+# Time-series feature'lar (Prediction Service icinde hesaplanir)
+TIME_SERIES_FEATURES = [
+    "power_output_rolling_mean", "power_output_rolling_std", "power_output_delta",
+    "generator_rpm_rolling_mean", "generator_rpm_rolling_std", "generator_rpm_delta",
+    "wind_speed_rolling_mean", "wind_speed_rolling_std", "wind_speed_delta",
+    "power_deviation",
+]
 
-# Hibrit skor esik degerleri (PR curve'den hesaplanmis)
-ANOMALY_THRESHOLD: float = 0.6859
+# Model'in bekledigli tam feature listesi
+FEATURE_COLUMNS = BASE_FEATURES + TIME_SERIES_FEATURES
 
-# Alarm Severity Esikleri
-SEVERITY_THRESHOLD_WARNING: float = 0.6859
-SEVERITY_THRESHOLD_CRITICAL: float = 0.8546
+# Rolling window boyutu (6 olcum = 1 saat, 10dk aralikli SCADA)
+ROLLING_WINDOW = 6
+
+# Ensemble agirliklari
+ISO_WEIGHT: float = 0.50
+XGB_WEIGHT: float = 0.50
+
+# Esik degerleri (PR curve'den hesaplanmis)
+ANOMALY_THRESHOLD: float = 0.3507
+SEVERITY_THRESHOLD_WARNING: float = 0.3507
+SEVERITY_THRESHOLD_CRITICAL: float = 0.6268
