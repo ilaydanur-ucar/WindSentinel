@@ -59,10 +59,10 @@ ON CONFLICT (turbine_id) DO NOTHING;
 -- Postman ve frontend geliştirme için örnek veri
 -- ─────────────────────────────────────────
 
--- Test kullanıcıları (şifreler bcrypt ile hashlenmiştir)
+-- Test kullanıcıları (sifre: admin123, bcrypt hash)
 INSERT INTO users (email, password, name) VALUES
-    ('admin@windsentinel.com', '$2a$10$xKB8cKQ5z5lD8nK8hE8XxeQJ1r7M5VnQp3C8z4HkJvX5j9VqKhGy', 'Admin User'),
-    ('technician@windsentinel.com', '$2a$10$xKB8cKQ5z5lD8nK8hE8XxeQJ1r7M5VnQp3C8z4HkJvX5j9VqKhGy', 'Saha Teknisyeni')
+    ('admin@windsentinel.com', '$2b$10$Dt6cn1pOYbyEL9Bkp5252OKf4Fzdc1/jEDpDYa9jdfhdW59cneMnO', 'Admin User'),
+    ('technician@windsentinel.com', '$2b$10$Dt6cn1pOYbyEL9Bkp5252OKf4Fzdc1/jEDpDYa9jdfhdW59cneMnO', 'Saha Teknisyeni')
 ON CONFLICT (email) DO NOTHING;
 
 -- Örnek alertler (active)

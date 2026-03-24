@@ -29,30 +29,43 @@ const server = http.createServer(app);
 
 // ── Socket.IO ──
 const io = new Server(server, {
-  cors: { origin: config.cors.origin },
+  cors: {
+    origin: config.cors.origin,
+    methods: ['GET', 'POST'],
+  },
 });
 
-// Socket.IO instance'ı app'e bağla (route'lardan erişim için)
 app.set('io', io);
 
 io.on('connection', (socket) => {
-  console.log(`[WS] Client bağlandı: ${socket.id}`);
-
+  console.log(`[WS] Client connected: ${socket.id}`);
   socket.on('disconnect', () => {
-    console.log(`[WS] Client ayrıldı: ${socket.id}`);
+    console.log(`[WS] Client disconnected: ${socket.id}`);
   });
 });
 
 // ── Global Middleware ──
 app.use(helmet());
 app.use(cors({ origin: config.cors.origin }));
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 
-// Rate limiting - brute force koruması
+// Request logging
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const ms = Date.now() - start;
+    if (req.path !== '/health') {
+      console.log(`[HTTP] ${req.method} ${req.path} ${res.statusCode} ${ms}ms`);
+    }
+  });
+  next();
+});
+
+// Rate limiting
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 dakika
+  windowMs: 15 * 60 * 1000,
   max: 20,
-  message: { success: false, message: 'Çok fazla deneme. Lütfen bekleyin.' },
+  message: { success: false, message: 'Too many requests. Please wait.' },
 });
 
 // ── Health Check ──
@@ -78,23 +91,35 @@ app.use('/api/alerts', authMiddleware, alertRoutes);
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: `${req.method} ${req.path} bulunamadı.`,
+    message: `${req.method} ${req.path} not found.`,
   });
 });
 
-// ── Merkezi Error Handler ──
+// ── Error Handler ──
 app.use(errorHandler);
 
-// ── Server Başlat ──
+// ── Server Start ──
 server.listen(config.port, async () => {
   console.log('═══════════════════════════════════════');
-  console.log(`  WindSentinel API Gateway`);
+  console.log('  WindSentinel API Gateway');
   console.log(`  Port: ${config.port}`);
-  console.log(`  WebSocket: aktif`);
+  console.log('  WebSocket: active');
   console.log('═══════════════════════════════════════');
 
-  // RabbitMQ alert consumer başlat (WebSocket push için)
   await startAlertConsumer(io);
 });
+
+// ── Graceful Shutdown ──
+function shutdown(signal) {
+  console.log(`[SHUTDOWN] ${signal} received. Closing server...`);
+  server.close(() => {
+    console.log('[SHUTDOWN] HTTP server closed.');
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(1), 10000);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 module.exports = { app, server, io };
