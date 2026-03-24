@@ -7,42 +7,35 @@ export default function AlertToast() {
 
   useEffect(() => {
     const socket = connectSocket();
-
     socket.on('new_alert', (alert) => {
       const toast = { ...alert, _id: Date.now() };
       setToasts((prev) => [toast, ...prev].slice(0, 5));
-
-      // 10 saniye sonra otomatik kaldır
       setTimeout(() => {
         setToasts((prev) => prev.filter((t) => t._id !== toast._id));
       }, 10000);
     });
-
     return () => disconnectSocket();
   }, []);
-
-  const removeToast = (id) => {
-    setToasts((prev) => prev.filter((t) => t._id !== id));
-  };
 
   if (toasts.length === 0) return null;
 
   return (
     <div className="toast-container">
       {toasts.map((t) => (
-        <div key={t._id} className="toast toast-alert">
-          <div className="flex items-center gap-2" style={{ justifyContent: 'space-between' }}>
+        <div key={t._id} className="toast">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle size={18} color="var(--accent-red)" />
-              <strong>New Alert</strong>
+              <AlertTriangle size={16} color="var(--red)" />
+              <strong style={{ fontSize: '0.85rem' }}>Yeni Alarm</strong>
             </div>
-            <button onClick={() => removeToast(t._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-              <X size={16} />
+            <button onClick={() => setToasts(prev => prev.filter(x => x._id !== t._id))}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)' }}>
+              <X size={15} />
             </button>
           </div>
-          <div style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
+          <div style={{ marginTop: '0.4rem', fontSize: '0.82rem' }}>
             <div><strong>{t.turbine_id}</strong> - {t.anomaly_type}</div>
-            <div className="text-muted">Score: {(t.anomaly_score * 100).toFixed(0)}%</div>
+            <div className="text-muted text-sm">Skor: {Math.round((t.anomaly_score || 0) * 100)}%</div>
           </div>
         </div>
       ))}

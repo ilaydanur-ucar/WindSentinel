@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function Alerts() {
@@ -17,15 +17,13 @@ export default function Alerts() {
       setAlerts(res.data);
       setPagination(res.pagination);
     } catch (err) {
-      console.error('Alert fetch error:', err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchAlerts(filter);
-  }, [filter]);
+  useEffect(() => { fetchAlerts(filter); }, [filter]);
 
   const handleResolve = async (id) => {
     try {
@@ -39,23 +37,18 @@ export default function Alerts() {
   return (
     <>
       <div className="page-header">
-        <h1 className="page-title">Alerts</h1>
-        <p className="page-subtitle">Anomaly detection results</p>
+        <div className="page-title">Alarmlar</div>
+        <div className="page-subtitle">Anomali tespit sonuclari</div>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2" style={{ marginBottom: '1rem' }}>
-        {['', 'active', 'resolved'].map((f) => (
-          <button
-            key={f}
-            className={`btn ${filter === f ? 'btn-primary' : 'btn-ghost'}`}
-            onClick={() => setFilter(f)}
-          >
-            {f === '' ? 'All' : f === 'active' ? 'Active' : 'Resolved'}
+      <div className="flex gap-2 mb-4">
+        {[['', 'Tumu'], ['active', 'Aktif'], ['resolved', 'Cozulmus']].map(([f, label]) => (
+          <button key={f} className={`btn btn-filter ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
+            {label}
           </button>
         ))}
-        <span className="text-muted" style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: '0.85rem' }}>
-          {pagination.total || 0} total
+        <span className="text-muted" style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: '0.82rem' }}>
+          {pagination.total || 0} kayit
         </span>
       </div>
 
@@ -64,51 +57,50 @@ export default function Alerts() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Turbine</th>
-              <th>Type</th>
-              <th>Score</th>
-              <th>Confidence</th>
-              <th>Status</th>
-              <th>Time</th>
-              <th>Action</th>
+              <th>Turbin</th>
+              <th>Tip</th>
+              <th>Skor</th>
+              <th>Guven</th>
+              <th>Durum</th>
+              <th>Tarih</th>
+              <th>Islem</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="text-muted" style={{ textAlign: 'center' }}>Loading...</td></tr>
+              <tr><td colSpan={8} className="text-muted" style={{ textAlign: 'center' }}>Yukleniyor...</td></tr>
             ) : alerts.length === 0 ? (
-              <tr><td colSpan={8} className="text-muted" style={{ textAlign: 'center' }}>No alerts found</td></tr>
-            ) : (
-              alerts.map((a) => (
+              <tr><td colSpan={8} className="text-muted" style={{ textAlign: 'center' }}>Alarm bulunamadi</td></tr>
+            ) : alerts.map((a) => {
+              const score = Math.round(a.anomaly_score * 100);
+              const riskClass = score > 85 ? 'risk-high' : score > 60 ? 'risk-medium' : 'risk-low';
+              return (
                 <tr key={a.id}>
-                  <td>#{a.id}</td>
-                  <td style={{ fontWeight: 500 }}>{a.turbine_id}</td>
+                  <td className="text-muted">#{a.id}</td>
+                  <td style={{ fontWeight: 600 }}>{a.turbine_id}</td>
                   <td>{a.anomaly_type}</td>
+                  <td><span className={`risk-score ${riskClass}`}>{score}</span></td>
+                  <td>{Math.round(a.confidence * 100)}%</td>
                   <td>
-                    <span className={`badge ${a.anomaly_score > 0.85 ? 'badge-critical' : 'badge-warning'}`}>
-                      {(a.anomaly_score * 100).toFixed(0)}%
+                    <span className={`badge badge-${a.status === 'active' ? 'kritik' : 'resolved'}`}>
+                      {a.status === 'active' ? 'Aktif' : 'Cozuldu'}
                     </span>
                   </td>
-                  <td>{(a.confidence * 100).toFixed(0)}%</td>
-                  <td><span className={`badge badge-${a.status}`}>{a.status}</span></td>
-                  <td className="text-muted" style={{ fontSize: '0.8rem' }}>
-                    {new Date(a.created_at).toLocaleString()}
-                  </td>
+                  <td className="text-muted text-sm">{new Date(a.created_at).toLocaleString('tr-TR')}</td>
                   <td>
                     {a.status === 'active' ? (
-                      <button className="btn btn-success" style={{ padding: '0.3rem 0.7rem', fontSize: '0.8rem' }}
-                        onClick={() => handleResolve(a.id)}>
-                        <CheckCircle size={14} style={{ marginRight: '0.3rem' }} />Resolve
+                      <button className="btn btn-success btn-sm" onClick={() => handleResolve(a.id)}>
+                        <CheckCircle size={14} /> Coz
                       </button>
                     ) : (
-                      <span className="text-muted" style={{ fontSize: '0.8rem' }}>
-                        {a.resolved_at ? new Date(a.resolved_at).toLocaleString() : '-'}
+                      <span className="text-muted text-sm">
+                        {a.resolved_at ? new Date(a.resolved_at).toLocaleString('tr-TR') : '-'}
                       </span>
                     )}
                   </td>
                 </tr>
-              ))
-            )}
+              );
+            })}
           </tbody>
         </table>
       </div>

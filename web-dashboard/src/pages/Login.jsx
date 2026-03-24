@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Wind } from 'lucide-react';
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -23,39 +22,30 @@ export default function Login({ onLogin }) {
   return (
     <div className="login-page">
       <div className="login-box">
-        <div className="flex items-center gap-2" style={{ marginBottom: '1.5rem' }}>
-          <Wind size={32} color="var(--accent-blue)" />
-          <span className="login-title">Wind<span style={{ color: 'var(--accent-blue)' }}>Sentinel</span></span>
+        <div className="flex items-center gap-3" style={{ marginBottom: '1.5rem' }}>
+          <img src="/favicon.svg" alt="WindSentinel" style={{ width: 40, height: 40 }} />
+          <div>
+            <div className="login-title">WIND Sentinel</div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Erken Ariza Tespit Sistemi
+            </div>
+          </div>
         </div>
-        <p className="login-subtitle">Wind turbine monitoring system</p>
+        <p className="login-subtitle">Sisteme giris yaparak turbin izleme paneline erisebilirsiniz.</p>
 
         {error && <div className="error-msg">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <label className="input-label">Email</label>
-            <input
-              className="input"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@windsentinel.com"
-              required
-            />
+            <label className="input-label">E-posta</label>
+            <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@windsentinel.com" required />
           </div>
           <div className="input-group">
-            <label className="input-label">Password</label>
-            <input
-              className="input"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
+            <label className="input-label">Sifre</label>
+            <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
           </div>
-          <button className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+          <button className="btn btn-primary" style={{ width: '100%', padding: '0.7rem', justifyContent: 'center' }} disabled={loading}>
+            {loading ? 'Giris yapiliyor...' : 'Giris Yap'}
           </button>
         </form>
       </div>

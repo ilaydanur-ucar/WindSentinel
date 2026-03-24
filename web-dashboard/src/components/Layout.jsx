@@ -1,41 +1,53 @@
 import { NavLink } from 'react-router-dom';
-import { Wind, LayoutDashboard, AlertTriangle, Fan, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, AlertTriangle, Fan, LogOut, Bell, Settings, Search } from 'lucide-react';
 
 export default function Layout({ children, onLogout, user }) {
+  const initials = user?.email ? user.email.substring(0, 2).toUpperCase() : 'WS';
+
   return (
     <div className="app-layout">
-      <aside className="sidebar">
-        <div className="sidebar-logo">
-          <Wind size={24} color="var(--cyan)" />
-          Wind<span>Sentinel</span>
+      {/* Top Bar */}
+      <header className="topbar">
+        <div className="topbar-logo">
+          <img src="/favicon.svg" alt="WindSentinel" />
+          <div className="topbar-logo-text">
+            <h1>WIND Sentinel</h1>
+            <span>Erken Ariza Tespit Sistemi</span>
+          </div>
         </div>
 
+        <div className="topbar-search">
+          <Search size={16} className="topbar-search-icon" />
+          <input type="text" placeholder="Turbin ara..." />
+        </div>
+
+        <div className="topbar-actions">
+          <button className="topbar-btn">
+            <Bell size={18} />
+            <span className="dot"></span>
+          </button>
+          <button className="topbar-btn">
+            <Settings size={18} />
+          </button>
+          <div className="topbar-avatar" onClick={onLogout} title="Cikis Yap">
+            {initials}
+          </div>
+        </div>
+      </header>
+
+      {/* Sidebar */}
+      <aside className="sidebar">
         <nav className="sidebar-nav">
           <NavLink to="/" end className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-            <LayoutDashboard size={18} /> Dashboard
+            <LayoutDashboard size={18} /> Kontrol Paneli
           </NavLink>
           <NavLink to="/turbines" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-            <Fan size={18} /> Turbines
+            <Fan size={18} /> Turbinler
           </NavLink>
           <NavLink to="/alerts" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-            <AlertTriangle size={18} /> Alerts
+            <AlertTriangle size={18} /> Alarmlar
           </NavLink>
         </nav>
-
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-          <div className="flex items-center gap-2" style={{ marginBottom: '0.75rem' }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--blue-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <User size={16} color="var(--blue)" />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{user?.email?.split('@')[0]}</div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{user?.email}</div>
-            </div>
-          </div>
-          <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center' }} onClick={onLogout}>
-            <LogOut size={15} /> Logout
-          </button>
-        </div>
       </aside>
 
       <main className="main-content">
