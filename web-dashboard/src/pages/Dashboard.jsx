@@ -229,9 +229,9 @@ export default function Dashboard() {
         </div>
 
         <div className="stat-card green">
-          <div className="stat-label">Çözüm Oranı</div>
+          <div className="stat-label">İncelenme Oranı</div>
           <div className="stat-value green">{resolutionRate}%</div>
-          <div className="stat-sub">{resolvedAlerts}/{totalAlerts} çözüldü</div>
+          <div className="stat-sub">{resolvedAlerts}/{totalAlerts} incelendi</div>
         </div>
 
         <div className="stat-card amber">

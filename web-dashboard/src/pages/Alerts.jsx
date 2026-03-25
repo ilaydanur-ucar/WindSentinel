@@ -35,7 +35,7 @@ export default function Alerts() {
       </div>
 
       <div className="flex gap-2 mb-3" style={{ alignItems: 'center' }}>
-        {[['', 'Tümü'], ['active', 'Aktif'], ['resolved', 'Çözülmüş']].map(([f, label]) => (
+        {[['', 'Tümü'], ['active', 'Aktif'], ['resolved', 'İncelendi']].map(([f, label]) => (
           <button key={f} className={`btn btn-filter ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
             {label}
           </button>
@@ -74,10 +74,10 @@ export default function Alerts() {
                   <td style={{ fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", fontSize: '12.5px' }}>{a.turbine_id}</td>
                   <td>{a.anomaly_type}</td>
                   <td><span style={{ fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", color: scoreColor }}>{score}</span></td>
-                  <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>{Math.round(a.confidence * 100)}%</td>
+                  <td style={{ fontFamily: "'JetBrains Mono', monospace", color: a.confidence >= 0.85 ? 'var(--green)' : a.confidence >= 0.70 ? 'var(--amber)' : 'var(--red)' }}>{Math.round(a.confidence * 100)}%</td>
                   <td>
                     <span className={`badge-status badge-${a.status === 'active' ? 'crit' : 'resolved'}`}>
-                      {a.status === 'active' ? 'Aktif' : 'Çözüldü'}
+                      {a.status === 'active' ? 'Aktif' : 'İncelendi'}
                     </span>
                   </td>
                   <td className="text-muted text-sm">{new Date(a.created_at).toLocaleString('tr-TR')}</td>

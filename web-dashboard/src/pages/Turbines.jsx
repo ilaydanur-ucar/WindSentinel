@@ -121,7 +121,7 @@ export function TurbineDetail() {
           <div className="stat-value red">{stats.active_count}</div>
         </div>
         <div className="stat-card green">
-          <div className="stat-label">Çözülmüş</div>
+          <div className="stat-label">İncelendi</div>
           <div className="stat-value green">{stats.resolved_count}</div>
         </div>
         <div className="stat-card blue">
@@ -152,8 +152,8 @@ export function TurbineDetail() {
                       {score}
                     </span>
                   </td>
-                  <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>{Math.round(a.confidence * 100)}%</td>
-                  <td><span className={`badge-status badge-${a.status === 'active' ? 'crit' : 'resolved'}`}>{a.status === 'active' ? 'Aktif' : 'Çözüldü'}</span></td>
+                  <td style={{ fontFamily: "'JetBrains Mono', monospace", color: a.confidence >= 0.85 ? 'var(--green)' : a.confidence >= 0.70 ? 'var(--amber)' : 'var(--red)' }}>{Math.round(a.confidence * 100)}%</td>
+                  <td><span className={`badge-status badge-${a.status === 'active' ? 'crit' : 'resolved'}`}>{a.status === 'active' ? 'Aktif' : 'İncelendi'}</span></td>
                   <td className="text-muted text-sm">{new Date(a.created_at).toLocaleString('tr-TR')}</td>
                 </tr>
               );
