@@ -16,6 +16,9 @@ TIME_SERIES_FEATURES = [
     "wind_speed_rolling_mean", "wind_speed_rolling_std", "wind_speed_delta",
     "power_deviation",
     "power_curve_deviation",
+    "rpm_wind_deviation",
+    "power_spike",
+    "reactive_imbalance",
 ]
 
 # Model'in bekledigli tam feature listesi

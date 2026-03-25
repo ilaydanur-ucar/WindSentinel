@@ -16,43 +16,36 @@ export default function Alerts() {
       const res = await api.getAlerts(params);
       setAlerts(res.data);
       setPagination(res.pagination);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => { fetchAlerts(filter); }, [filter]);
 
   const handleResolve = async (id) => {
-    try {
-      await api.resolveAlert(id);
-      fetchAlerts(filter);
-    } catch (err) {
-      alert(err.message);
-    }
+    try { await api.resolveAlert(id); fetchAlerts(filter); }
+    catch (err) { alert(err.message); }
   };
 
   return (
     <>
       <div className="page-header">
-        <div className="page-title">Alarmlar</div>
-        <div className="page-subtitle">Anomali tespit sonuclari</div>
+        <div className="page-title">Alarm Yonetimi</div>
+        <div className="page-sub">Anomali tespit sonuclari ve alarm gecmisi</div>
       </div>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-3" style={{ alignItems: 'center' }}>
         {[['', 'Tumu'], ['active', 'Aktif'], ['resolved', 'Cozulmus']].map(([f, label]) => (
           <button key={f} className={`btn btn-filter ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
             {label}
           </button>
         ))}
-        <span className="text-muted" style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: '0.82rem' }}>
+        <span className="text-muted text-sm" style={{ marginLeft: 'auto', fontFamily: "'JetBrains Mono', monospace" }}>
           {pagination.total || 0} kayit
         </span>
       </div>
 
-      <div className="card">
+      <div className="panel">
         <table className="table">
           <thead>
             <tr>
@@ -68,21 +61,22 @@ export default function Alerts() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="text-muted" style={{ textAlign: 'center' }}>Yukleniyor...</td></tr>
+              <tr><td colSpan={8} className="empty-state">Yukleniyor...</td></tr>
             ) : alerts.length === 0 ? (
-              <tr><td colSpan={8} className="text-muted" style={{ textAlign: 'center' }}>Alarm bulunamadi</td></tr>
-            ) : alerts.map((a) => {
+              <tr><td colSpan={8} className="empty-state">Alarm bulunamadi</td></tr>
+            ) : alerts.map(a => {
               const score = Math.round(a.anomaly_score * 100);
-              const riskClass = score > 85 ? 'risk-high' : score > 60 ? 'risk-medium' : 'risk-low';
+              const severity = score > 85 ? 'crit' : score > 60 ? 'warn' : 'ok';
+              const scoreColor = severity === 'crit' ? 'var(--red)' : severity === 'warn' ? 'var(--amber)' : 'var(--green)';
               return (
                 <tr key={a.id}>
-                  <td className="text-muted">#{a.id}</td>
-                  <td style={{ fontWeight: 600 }}>{a.turbine_id}</td>
+                  <td style={{ color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace", fontSize: '11.5px' }}>#{a.id}</td>
+                  <td style={{ fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", fontSize: '12.5px' }}>{a.turbine_id}</td>
                   <td>{a.anomaly_type}</td>
-                  <td><span className={`risk-score ${riskClass}`}>{score}</span></td>
-                  <td>{Math.round(a.confidence * 100)}%</td>
+                  <td><span style={{ fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", color: scoreColor }}>{score}</span></td>
+                  <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>{Math.round(a.confidence * 100)}%</td>
                   <td>
-                    <span className={`badge badge-${a.status === 'active' ? 'kritik' : 'resolved'}`}>
+                    <span className={`badge-status badge-${a.status === 'active' ? 'crit' : 'resolved'}`}>
                       {a.status === 'active' ? 'Aktif' : 'Cozuldu'}
                     </span>
                   </td>
@@ -90,7 +84,7 @@ export default function Alerts() {
                   <td>
                     {a.status === 'active' ? (
                       <button className="btn btn-success btn-sm" onClick={() => handleResolve(a.id)}>
-                        <CheckCircle size={14} /> Coz
+                        <CheckCircle size={12} /> Coz
                       </button>
                     ) : (
                       <span className="text-muted text-sm">

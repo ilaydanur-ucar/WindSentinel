@@ -29,13 +29,13 @@ class Settings(BaseSettings):
     otomatik olarak bu sınıfın alanlarına eşler ve tip kontrolü yapar.
 
     Örnek:
-        .env →  RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+        .env →  RABBITMQ_URL=amqp://user:pass@rabbitmq:5672
         kod →  settings.RABBITMQ_URL  (str tipinde, doğrulanmış)
     """
 
     # ── RabbitMQ Ayarları ──
     RABBITMQ_URL: str = Field(
-        default="amqp://admin:admin123@rabbitmq:5672",
+        default="",
         description="AMQP protokolü ile RabbitMQ bağlantı URL'si",
     )
     EXCHANGE_NAME: str = Field(

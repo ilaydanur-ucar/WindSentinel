@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # ── RabbitMQ Bağlantı ──
     RABBITMQ_URL: str = Field(
-        default="amqp://admin:admin123@rabbitmq:5672",
+        default="",
         description="AMQP protokolü ile RabbitMQ bağlantı URL'si",
     )
     

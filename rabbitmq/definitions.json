@@ -1,12 +1,27 @@
 {
   "rabbit_version": "3.12",
-  "users": [],
+  "users": [
+    {
+      "name": "windsentinel",
+      "password_hash": "+Q/+9keCJ7N43iI68GBEuW3TFrcGFRoDYWeHwkSvnYyExa3U",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["administrator"]
+    }
+  ],
   "vhosts": [
     {
       "name": "/"
     }
   ],
-  "permissions": [],
+  "permissions": [
+    {
+      "user": "windsentinel",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
   "exchanges": [
     {
       "name": "wind.events",

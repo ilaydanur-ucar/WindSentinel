@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     # RabbitMQ Ayarları
     RABBITMQ_HOST: str = os.getenv("RABBITMQ_HOST", "localhost")
     RABBITMQ_PORT: int = int(os.getenv("RABBITMQ_PORT", "5672"))
-    RABBITMQ_USER: str = os.getenv("RABBITMQ_USER", "guest")
-    RABBITMQ_PASSWORD: str = os.getenv("RABBITMQ_PASSWORD", "guest")
+    RABBITMQ_USER: str = os.getenv("RABBITMQ_USER", "")
+    RABBITMQ_PASSWORD: str = os.getenv("RABBITMQ_PASSWORD", "")
     
     # Kuyruk İsimleri (definitions.json ile eşleşmeli)
     RABBITMQ_CONSUME_QUEUE: str = "measurement.featured"

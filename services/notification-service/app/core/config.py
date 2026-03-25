@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "WindSentinel-Notification-Service"
 
     # RabbitMQ Ayarları
-    RABBITMQ_URL: str = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+    RABBITMQ_URL: str = os.getenv("RABBITMQ_URL", "")
     QUEUE_NAME: str = "prediction.result"
 
     # Alert bildirim kuyruğu (API Gateway WebSocket push için)

@@ -38,6 +38,9 @@ class PredictionOrchestrator:
             'power_output': feature_msg.power_output,
             'generator_rpm': feature_msg.generator_rpm,
             'wind_speed': feature_msg.wind_speed,
+            'reactive_power_inductive': feature_msg.reactive_power_inductive,
+            'reactive_power_capacitive': feature_msg.reactive_power_capacitive,
+            'total_active_power': feature_msg.total_active_power,
         }
         buf.append(current)
 
@@ -60,13 +63,11 @@ class PredictionOrchestrator:
         ts_features['power_deviation'] = current['power_output'] - ts_features['power_output_rolling_mean']
 
         # Power curve deviation: turbin bazli ruzgar-guc profilinden sapma
-        # Her turbin kendi "normal" guc egrisini ogrenir
         profile = self._power_profiles[turbine_id]
         profile.append((feature_msg.wind_speed, feature_msg.power_output))
 
         if len(profile) >= 10:
             ws = feature_msg.wind_speed
-            # Benzer ruzgar hizindaki (+-1 m/s) ortalama gucu bul
             similar = [p for w, p in profile if abs(w - ws) <= 1.0]
             if len(similar) >= 3:
                 expected_power = float(np.mean(similar))
@@ -75,6 +76,25 @@ class PredictionOrchestrator:
                 ts_features['power_curve_deviation'] = 0.0
         else:
             ts_features['power_curve_deviation'] = 0.0
+
+        # RPM-Wind deviation: ruzgar hizina gore beklenen RPM'den sapma
+        wind_vals = [b['wind_speed'] for b in buf]
+        rpm_vals = [b['generator_rpm'] for b in buf]
+        ws_mean = float(np.mean(wind_vals)) if wind_vals else 1.0
+        rpm_mean = float(np.mean(rpm_vals)) if rpm_vals else 0.0
+        ratio = rpm_mean / ws_mean if ws_mean > 0 else 0.0
+        ts_features['rpm_wind_deviation'] = current['generator_rpm'] - (current['wind_speed'] * ratio)
+
+        # Power spike: ani guc degisimi
+        if len(buf) >= 2:
+            prev_power = list(buf)[-2]['power_output']
+            ts_features['power_spike'] = abs(current['power_output'] - prev_power)
+        else:
+            ts_features['power_spike'] = 0.0
+
+        # Reactive imbalance: reaktif guc dengesizligi orani
+        reactive_diff = abs(current['reactive_power_inductive'] - current['reactive_power_capacitive'])
+        ts_features['reactive_imbalance'] = reactive_diff / (abs(current['total_active_power']) + 1e-6)
 
         return ts_features
 
