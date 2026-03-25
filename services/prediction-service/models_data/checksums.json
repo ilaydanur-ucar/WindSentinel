@@ -1,4 +1,5 @@
 {
-    "isolation_forest.pkl": "6afdfbd2f2ad2113bc7cb5954405277ce39022c517ad1c38f456a9f5d5a9f154",
-    "xgboost_model.json": "20b0ad3e7870a4f12271b6cb76e7ca3090eb5e8c913dff97ccf5e23c4ecc9293"
+    "isolation_forest.pkl": "fc476479ad0726ead6315091e365cf16a70838538d15ee97462a4382602e057e",
+    "xgboost_model.json": "dcb8cde4b8fee59839a5e1361373d08d6fb669c38f570a9e3b308fd962d6c079",
+    "scaler.pkl": "f9138c67f3fd2bae5887f2465043b242af4bd2b9220a80e36f82197e7d557e27"
 }

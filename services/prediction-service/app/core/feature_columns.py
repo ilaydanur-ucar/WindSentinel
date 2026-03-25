@@ -15,6 +15,7 @@ TIME_SERIES_FEATURES = [
     "generator_rpm_rolling_mean", "generator_rpm_rolling_std", "generator_rpm_delta",
     "wind_speed_rolling_mean", "wind_speed_rolling_std", "wind_speed_delta",
     "power_deviation",
+    "power_curve_deviation",
 ]
 
 # Model'in bekledigli tam feature listesi
@@ -27,7 +28,7 @@ ROLLING_WINDOW = 6
 ISO_WEIGHT: float = 0.50
 XGB_WEIGHT: float = 0.50
 
-# Esik degerleri (PR curve'den hesaplanmis)
-ANOMALY_THRESHOLD: float = 0.3507
-SEVERITY_THRESHOLD_WARNING: float = 0.3507
-SEVERITY_THRESHOLD_CRITICAL: float = 0.6268
+# Esik degerleri (PR curve'den hesaplanmis - 21 feature, F1=0.61)
+ANOMALY_THRESHOLD: float = 0.3533
+SEVERITY_THRESHOLD_WARNING: float = 0.3533
+SEVERITY_THRESHOLD_CRITICAL: float = 0.6418
