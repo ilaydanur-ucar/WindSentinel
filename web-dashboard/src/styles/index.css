@@ -51,6 +51,42 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Subtle grid background */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(30,43,74,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,43,74,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-glow {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,99,235,0.04) 0%, transparent 70%);
+  top: -150px;
+  right: -100px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-glow-2 {
+  position: fixed;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(13,148,136,0.03) 0%, transparent 70%);
+  bottom: -100px;
+  left: -50px;
+  pointer-events: none;
+  z-index: 0;
+}
+
 a { color: var(--accent); text-decoration: none; }
 
 /* ── NAV ── */
@@ -171,7 +207,7 @@ a { color: var(--accent); text-decoration: none; }
 }
 
 /* ── LAYOUT ── */
-.app-layout { display: flex; flex-direction: column; min-height: 100vh; }
+.app-layout { display: flex; flex-direction: column; min-height: 100vh; position: relative; z-index: 1; }
 .main-wrapper { display: flex; flex: 1; }
 
 .sidebar {
@@ -242,6 +278,8 @@ a { color: var(--accent); text-decoration: none; }
   margin-top: 56px;
   padding: 1.25rem 1.5rem;
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── STAT CARDS ── */
@@ -334,7 +372,7 @@ a { color: var(--accent); text-decoration: none; }
 /* ── TURBINE GRID ── */
 .turbine-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.6rem;
 }
 
@@ -577,7 +615,7 @@ a { color: var(--accent); text-decoration: none; }
 
 /* ── GRID ── */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
-.grid-2-wide { display: grid; grid-template-columns: 1.6fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+.grid-2-wide { display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
 
 /* ── TOAST ── */
 .toast-container { position: fixed; top: 68px; right: 1rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.4rem; }

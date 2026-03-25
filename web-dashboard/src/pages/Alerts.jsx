@@ -30,18 +30,18 @@ export default function Alerts() {
   return (
     <>
       <div className="page-header">
-        <div className="page-title">Alarm Yonetimi</div>
-        <div className="page-sub">Anomali tespit sonuclari ve alarm gecmisi</div>
+        <div className="page-title">Alarm Yönetimi</div>
+        <div className="page-sub">Anomali tespit sonuçları ve alarm geçmişi</div>
       </div>
 
       <div className="flex gap-2 mb-3" style={{ alignItems: 'center' }}>
-        {[['', 'Tumu'], ['active', 'Aktif'], ['resolved', 'Cozulmus']].map(([f, label]) => (
+        {[['', 'Tümü'], ['active', 'Aktif'], ['resolved', 'Çözülmüş']].map(([f, label]) => (
           <button key={f} className={`btn btn-filter ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
             {label}
           </button>
         ))}
         <span className="text-muted text-sm" style={{ marginLeft: 'auto', fontFamily: "'JetBrains Mono', monospace" }}>
-          {pagination.total || 0} kayit
+          {pagination.total || 0} kayıt
         </span>
       </div>
 
@@ -50,20 +50,20 @@ export default function Alerts() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Turbin</th>
-              <th>Tip</th>
+              <th>Türbin</th>
+              <th>Tür</th>
               <th>Skor</th>
-              <th>Guven</th>
+              <th>Güven</th>
               <th>Durum</th>
               <th>Tarih</th>
-              <th>Islem</th>
+              <th>İşlem</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="empty-state">Yukleniyor...</td></tr>
+              <tr><td colSpan={8} className="empty-state">Yükleniyor...</td></tr>
             ) : alerts.length === 0 ? (
-              <tr><td colSpan={8} className="empty-state">Alarm bulunamadi</td></tr>
+              <tr><td colSpan={8} className="empty-state">Alarm bulunamadı</td></tr>
             ) : alerts.map(a => {
               const score = Math.round(a.anomaly_score * 100);
               const severity = score > 85 ? 'crit' : score > 60 ? 'warn' : 'ok';
@@ -77,18 +77,18 @@ export default function Alerts() {
                   <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>{Math.round(a.confidence * 100)}%</td>
                   <td>
                     <span className={`badge-status badge-${a.status === 'active' ? 'crit' : 'resolved'}`}>
-                      {a.status === 'active' ? 'Aktif' : 'Cozuldu'}
+                      {a.status === 'active' ? 'Aktif' : 'Çözüldü'}
                     </span>
                   </td>
                   <td className="text-muted text-sm">{new Date(a.created_at).toLocaleString('tr-TR')}</td>
                   <td>
                     {a.status === 'active' ? (
                       <button className="btn btn-success btn-sm" onClick={() => handleResolve(a.id)}>
-                        <CheckCircle size={12} /> Coz
+                        <CheckCircle size={12} /> Çöz
                       </button>
                     ) : (
                       <span className="text-muted text-sm">
-                        {a.resolved_at ? new Date(a.resolved_at).toLocaleString('tr-TR') : '-'}
+                        {a.resolved_at ? new Date(a.resolved_at).toLocaleString('tr-TR') : '—'}
                       </span>
                     )}
                   </td>

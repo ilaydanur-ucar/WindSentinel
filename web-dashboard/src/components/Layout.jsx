@@ -14,7 +14,7 @@ export default function Layout({ children, onLogout, user }) {
 
   const tabs = [
     { path: '/', label: 'Dashboard' },
-    { path: '/turbines', label: 'Turbinler' },
+    { path: '/turbines', label: 'Türbinler' },
     { path: '/alerts', label: 'Alarmlar' },
   ];
 
@@ -35,7 +35,7 @@ export default function Layout({ children, onLogout, user }) {
           </svg>
           <div>
             <div className="topbar-logo-text">WIND <span>SENTINEL</span></div>
-            <div className="topbar-logo-sub">Erken Ariza Tespit Sistemi</div>
+            <div className="topbar-logo-sub">Erken Arıza Tespit Sistemi</div>
           </div>
         </div>
 
@@ -56,7 +56,7 @@ export default function Layout({ children, onLogout, user }) {
             <Bell size={16} />
             {activeCount > 0 && <span className="dot"></span>}
           </button>
-          <div className="topbar-avatar" onClick={onLogout} title="Cikis Yap">
+          <div className="topbar-avatar" onClick={onLogout} title="Çıkış Yap">
             {initials}
           </div>
         </div>
@@ -65,12 +65,12 @@ export default function Layout({ children, onLogout, user }) {
       <div className="main-wrapper">
         {/* Sidebar */}
         <aside className="sidebar">
-          <div className="sidebar-label">Izleme</div>
+          <div className="sidebar-label">İzleme</div>
           <NavLink to="/" end className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
             <span className="sidebar-link-left"><LayoutDashboard size={15} /> Kontrol Paneli</span>
           </NavLink>
           <NavLink to="/turbines" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-            <span className="sidebar-link-left"><Fan size={15} /> Turbinler</span>
+            <span className="sidebar-link-left"><Fan size={15} /> Türbinler</span>
           </NavLink>
           <NavLink to="/alerts" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
             <span className="sidebar-link-left"><AlertTriangle size={15} /> Alarmlar</span>
@@ -86,7 +86,7 @@ export default function Layout({ children, onLogout, user }) {
           <div style={{ marginTop: 'auto' }}>
             <div className="sidebar-divider"></div>
             <button onClick={onLogout} className="sidebar-link" style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px', color: 'var(--muted)' }}>
-              <span className="sidebar-link-left"><LogOut size={15} /> Cikis Yap</span>
+              <span className="sidebar-link-left"><LogOut size={15} /> Çıkış Yap</span>
             </button>
           </div>
         </aside>

@@ -91,7 +91,7 @@ class MLPredictor(BasePredictor):
             confidence=round(float(final_score), 4),
             anomaly_score=round(float(iso_score), 4),
             severity=severity,
-            model_version="v3.0-leadtime",
+            model_version="v4.0-optuna",
             fault_type="generic_anomaly" if is_anomaly else "normal",
         )
 

@@ -18,6 +18,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <div className="bg-grid"></div>
+      <div className="bg-glow"></div>
+      <div className="bg-glow-2"></div>
       <Layout onLogout={logout} user={user}>
         <AlertToast />
         <Routes>

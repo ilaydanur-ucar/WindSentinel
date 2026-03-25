@@ -16,24 +16,24 @@ export function TurbineList() {
     });
   }, []);
 
-  if (loading) return <div className="empty-state"><Activity size={18} /><div style={{ marginTop: 8 }}>Yukleniyor...</div></div>;
+  if (loading) return <div className="empty-state"><Activity size={18} /><div style={{ marginTop: 8 }}>Yükleniyor...</div></div>;
 
   return (
     <>
       <div className="page-header">
-        <div className="page-title">Turbin Durumlari</div>
-        <div className="page-sub">Gercek zamanli izleme verileri</div>
+        <div className="page-title">Türbin Durumları</div>
+        <div className="page-sub">Gerçek zamanlı izleme verileri</div>
       </div>
 
       <div className="panel">
         <table className="table">
           <thead>
             <tr>
-              <th>Turbin</th>
+              <th>Türbin</th>
               <th>Durum</th>
               <th>Risk Skoru</th>
               <th>Aktif Alarm</th>
-              <th>Farm</th>
+              <th>Çiftlik</th>
             </tr>
           </thead>
           <tbody>
@@ -56,7 +56,7 @@ export function TurbineList() {
                       </div>
                     </div>
                   </td>
-                  <td><span className={`badge-status badge-${severity}`}>{severity === 'crit' ? 'Kritik' : severity === 'warn' ? 'Uyari' : 'Aktif'}</span></td>
+                  <td><span className={`badge-status badge-${severity}`}>{severity === 'crit' ? 'Kritik' : severity === 'warn' ? 'Uyarı' : 'Aktif'}</span></td>
                   <td>
                     <span style={{ fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: severity === 'crit' ? 'var(--red)' : severity === 'warn' ? 'var(--amber)' : 'var(--green)' }}>
                       {riskScore}
@@ -88,7 +88,7 @@ export function TurbineDetail() {
     api.getTurbine(turbineId).then(res => { setData(res.data); setLoading(false); }).catch(() => navigate('/turbines'));
   }, [turbineId, navigate]);
 
-  if (loading) return <div className="empty-state">Yukleniyor...</div>;
+  if (loading) return <div className="empty-state">Yükleniyor...</div>;
   const { turbine, alerts, stats } = data;
 
   return (
@@ -110,37 +110,37 @@ export function TurbineDetail() {
           </svg>
           <div>
             <div className="page-title">{turbine.turbine_id}</div>
-            <div className="page-sub">{turbine.farm_name} - Asset ID: {turbine.asset_id}</div>
+            <div className="page-sub">{turbine.farm_name} — Asset ID: {turbine.asset_id}</div>
           </div>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '0.75rem' }}>
         <div className="stat-card red">
-          <div className="stat-label">Aktif Alarm</div>
+          <div className="stat-label">Aktif Alarmlar</div>
           <div className="stat-value red">{stats.active_count}</div>
         </div>
         <div className="stat-card green">
-          <div className="stat-label">Cozulmus</div>
+          <div className="stat-label">Çözülmüş</div>
           <div className="stat-value green">{stats.resolved_count}</div>
         </div>
         <div className="stat-card blue">
-          <div className="stat-label">Toplam</div>
+          <div className="stat-label">Toplam Olay</div>
           <div className="stat-value blue">{stats.total_count}</div>
         </div>
       </div>
 
       <div className="panel">
         <div className="panel-header">
-          <span className="panel-title">Alarm Gecmisi</span>
+          <span className="panel-title">Alarm Geçmişi</span>
         </div>
         <table className="table">
           <thead>
-            <tr><th>Tip</th><th>Skor</th><th>Guven</th><th>Durum</th><th>Tarih</th></tr>
+            <tr><th>Tür</th><th>Skor</th><th>Güven</th><th>Durum</th><th>Tarih</th></tr>
           </thead>
           <tbody>
             {alerts.length === 0 ? (
-              <tr><td colSpan={5} className="empty-state">Alarm kaydedilmemis</td></tr>
+              <tr><td colSpan={5} className="empty-state">Bu türbin için alarm kaydedilmemiş</td></tr>
             ) : alerts.map(a => {
               const score = Math.round(a.anomaly_score * 100);
               const severity = score > 85 ? 'crit' : score > 60 ? 'warn' : 'ok';
@@ -153,7 +153,7 @@ export function TurbineDetail() {
                     </span>
                   </td>
                   <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>{Math.round(a.confidence * 100)}%</td>
-                  <td><span className={`badge-status badge-${a.status === 'active' ? 'crit' : 'resolved'}`}>{a.status === 'active' ? 'Aktif' : 'Cozuldu'}</span></td>
+                  <td><span className={`badge-status badge-${a.status === 'active' ? 'crit' : 'resolved'}`}>{a.status === 'active' ? 'Aktif' : 'Çözüldü'}</span></td>
                   <td className="text-muted text-sm">{new Date(a.created_at).toLocaleString('tr-TR')}</td>
                 </tr>
               );

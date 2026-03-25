@@ -20,7 +20,10 @@
         "wind_speed_rolling_std",
         "wind_speed_delta",
         "power_deviation",
-        "power_curve_deviation"
+        "power_curve_deviation",
+        "rpm_wind_deviation",
+        "power_spike",
+        "reactive_imbalance"
     ],
     "base_features": [
         "wind_speed",
@@ -34,14 +37,29 @@
         "reactive_power_balance",
         "power_to_wind_ratio"
     ],
-    "anomaly_threshold": 0.3532853002622751,
-    "severity_warning": 0.3532853002622751,
-    "severity_critical": 0.64179083178359,
-    "iso_weight": 0.5,
-    "xgb_weight": 0.5,
+    "anomaly_threshold": 0.2799109135736059,
+    "severity_warning": 0.2799109135736059,
+    "severity_critical": 0.6654673311027752,
+    "iso_weight": 0.5499999999999999,
+    "xgb_weight": 0.45,
     "lead_time_hours": 24,
     "rolling_window": 6,
-    "model_version": "v3.1-power-curve",
-    "f1_score": 0.6101153238605751,
-    "feature_count": 21
+    "model_version": "v4.0-optuna",
+    "f1_score": 0.6986250067221049,
+    "feature_count": 24,
+    "xgb_params": {
+        "max_depth": 10,
+        "n_estimators": 736,
+        "subsample": 0.79058826605964,
+        "min_child_weight": 7,
+        "gamma": 1.4115020003434284,
+        "reg_alpha": 0.10242407749158212,
+        "reg_lambda": 1.6897640493425579,
+        "scale_pos_weight": 32.55251756440281,
+        "tree_method": "hist",
+        "random_state": 42,
+        "eval_metric": "aucpr",
+        "learning_rate": 0.12355188153221373,
+        "colsample_bytree": 0.9519127880776648
+    }
 }

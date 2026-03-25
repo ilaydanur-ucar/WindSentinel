@@ -1,5 +1,5 @@
 # Pipeline ile uyumlu feature listesi.
-# 6 ham sensor + 4 turetilmis + 10 time-series = 20 feature
+# 6 ham sensor + 4 turetilmis + 14 time-series = 24 feature
 # Sutun sirasinin korunmasi modelin dogru tahmin yapmasi icin KRITIKTIR.
 
 # Feature Service'den gelen base feature'lar
@@ -27,11 +27,11 @@ FEATURE_COLUMNS = BASE_FEATURES + TIME_SERIES_FEATURES
 # Rolling window boyutu (6 olcum = 1 saat, 10dk aralikli SCADA)
 ROLLING_WINDOW = 6
 
-# Ensemble agirliklari
-ISO_WEIGHT: float = 0.50
-XGB_WEIGHT: float = 0.50
+# Ensemble agirliklari (Optuna v4.0 ile optimize edildi)
+ISO_WEIGHT: float = 0.55
+XGB_WEIGHT: float = 0.45
 
-# Esik degerleri (PR curve'den hesaplanmis - 21 feature, F1=0.61)
-ANOMALY_THRESHOLD: float = 0.3533
-SEVERITY_THRESHOLD_WARNING: float = 0.3533
-SEVERITY_THRESHOLD_CRITICAL: float = 0.6418
+# Esik degerleri (Optuna + PR curve, 24 feature, F1=0.70)
+ANOMALY_THRESHOLD: float = 0.2799
+SEVERITY_THRESHOLD_WARNING: float = 0.2799
+SEVERITY_THRESHOLD_CRITICAL: float = 0.6655

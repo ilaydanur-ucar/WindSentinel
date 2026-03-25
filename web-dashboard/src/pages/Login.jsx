@@ -17,6 +17,8 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="login-page">
+      <div className="bg-grid"></div>
+      <div className="bg-glow"></div>
       <div className="login-box">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
           <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
@@ -32,11 +34,11 @@ export default function Login({ onLogin }) {
           <div>
             <div className="login-title">WIND <span style={{ color: 'var(--accent)' }}>SENTINEL</span></div>
             <div style={{ fontSize: '9px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>
-              Erken Ariza Tespit Sistemi
+              Erken Arıza Tespit Sistemi
             </div>
           </div>
         </div>
-        <p className="login-subtitle">Turbin izleme paneline erisim icin giris yapin.</p>
+        <p className="login-subtitle">Türbin izleme paneline erişim için giriş yapın.</p>
 
         {error && <div className="error-msg">{error}</div>}
 
@@ -46,11 +48,11 @@ export default function Login({ onLogin }) {
             <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="admin@windsentinel.com" required />
           </div>
           <div className="input-group">
-            <label className="input-label">Sifre</label>
+            <label className="input-label">Şifre</label>
             <input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
           </div>
           <button className="btn btn-primary" style={{ width: '100%', padding: '0.6rem', justifyContent: 'center', fontSize: '13px' }} disabled={loading}>
-            {loading ? 'Giris yapiliyor...' : 'Giris Yap'}
+            {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
           </button>
         </form>
       </div>
