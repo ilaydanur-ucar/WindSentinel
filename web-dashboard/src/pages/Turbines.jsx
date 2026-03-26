@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Activity } from 'lucide-react';
+import { ArrowLeft, Activity, Download } from 'lucide-react';
 import { api } from '../services/api';
 import { useLanguage } from '../hooks/useLanguage';
+import { generateCSV, generatePDF } from '../services/reportService';
 
 export function TurbineList() {
   const { t, lang } = useLanguage();
@@ -23,8 +24,36 @@ export function TurbineList() {
   return (
     <>
       <div className="page-header">
-        <div className="page-title">{t('turbineStatuses')}</div>
-        <div className="page-sub">{t('realTimeData')}</div>
+        <div className="page-header-row">
+          <div>
+            <div className="page-title">{t('turbineStatuses')}</div>
+            <div className="page-sub">{t('realTimeData')}</div>
+          </div>
+          <div className="flex gap-2">
+            <button className="btn btn-ghost btn-sm" style={{ fontSize: '10.5px' }} onClick={() => {
+              const cols = [
+                { key: 'turbine_id', label: t('turbine') },
+                { key: 'status', label: t('status') },
+                { key: 'active_alerts', label: t('activeAlarmLabel') },
+                { key: 'farm_name', label: t('farmLabel') },
+              ];
+              generateCSV(turbines, cols, 'wind-sentinel-turbines.csv');
+            }}>
+              <Download size={11} /> CSV
+            </button>
+            <button className="btn btn-ghost btn-sm" style={{ fontSize: '10.5px' }} onClick={() => {
+              const cols = [
+                { key: 'turbine_id', label: t('turbine') },
+                { key: 'status', label: t('status') },
+                { key: 'active_alerts', label: t('activeAlarmLabel') },
+                { key: 'farm_name', label: t('farmLabel') },
+              ];
+              generatePDF(turbines, cols, t('reportTurbines'), 'wind-sentinel-turbines.pdf');
+            }}>
+              <Download size={11} /> PDF
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="panel">

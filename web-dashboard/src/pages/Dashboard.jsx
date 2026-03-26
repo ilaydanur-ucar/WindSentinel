@@ -1,164 +1,152 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Activity, ShieldCheck, Calculator } from 'lucide-react';
+
 import { api } from '../services/api';
 import { useLanguage } from '../hooks/useLanguage';
+import { timeAgo } from '../utils/formatters';
 
-function timeAgo(dateStr, t) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return t('justNow');
-  if (mins < 60) return `${mins} ${t('minutesAgo')}`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} ${t('hoursAgo')}`;
-  return `${Math.floor(hours / 24)} ${t('daysAgo')}`;
-}
 
 function RiskChart({ alerts }) {
-  const points = alerts.length > 0
-    ? alerts.slice(0, 8).reverse().map((a, i) => ({
-        x: 50 + i * 72,
-        y: 155 - Math.round(a.anomaly_score * 140),
-        score: Math.round(a.anomaly_score * 100),
-      }))
-    : Array.from({ length: 8 }, (_, i) => ({ x: 50 + i * 72, y: 120 - Math.sin(i * 0.7) * 30 }));
+  // Build time-based data points from alerts (sorted by date)
+  const sorted = [...alerts].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-  const linePoints = points.map(p => `${p.x},${p.y}`).join(' ');
-  const areaPath = `M${points[0].x},${points[0].y} ${points.map(p => `L${p.x},${p.y}`).join(' ')} L${points[points.length-1].x},160 L${points[0].x},160 Z`;
+  // Chart dimensions
+  const W = 600, H = 260, PAD_L = 48, PAD_R = 24, PAD_T = 24, PAD_B = 32;
+  const plotW = W - PAD_L - PAD_R;
+  const plotH = H - PAD_T - PAD_B;
+
+  // Generate points
+  let points;
+  let timeLabels;
+
+  if (sorted.length > 0) {
+    const minTime = new Date(sorted[0].created_at).getTime();
+    const maxTime = new Date(sorted[sorted.length - 1].created_at).getTime();
+    const range = maxTime - minTime || 1;
+
+    points = sorted.map(a => {
+      const score = Math.round(a.anomaly_score * 100);
+      const t = (new Date(a.created_at).getTime() - minTime) / range;
+      return {
+        x: PAD_L + t * plotW,
+        y: PAD_T + plotH - (score / 100) * plotH,
+        score,
+        date: new Date(a.created_at),
+        type: a.anomaly_type,
+        turbine: a.turbine_id,
+      };
+    });
+
+    // Time labels (distribute evenly)
+    const labelCount = Math.min(6, sorted.length);
+    timeLabels = Array.from({ length: labelCount }, (_, i) => {
+      const idx = Math.round(i * (sorted.length - 1) / Math.max(labelCount - 1, 1));
+      const d = new Date(sorted[idx].created_at);
+      const x = PAD_L + ((d.getTime() - minTime) / range) * plotW;
+      return { x, label: `${d.getDate()}.${d.getMonth() + 1} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` };
+    });
+  } else {
+    // Placeholder - animated sine wave
+    points = Array.from({ length: 12 }, (_, i) => ({
+      x: PAD_L + (i / 11) * plotW,
+      y: PAD_T + plotH / 2 + Math.sin(i * 0.8) * plotH * 0.2,
+      score: Math.round(50 + Math.sin(i * 0.8) * 20),
+    }));
+    timeLabels = Array.from({ length: 6 }, (_, i) => {
+      const h = i * 4;
+      return { x: PAD_L + (i / 5) * plotW, label: `${String(h).padStart(2, '0')}:00` };
+    });
+  }
+
+  // Smooth curve path (catmull-rom to bezier)
+  const curvePath = points.length < 2 ? '' : points.reduce((path, p, i, arr) => {
+    if (i === 0) return `M${p.x},${p.y}`;
+    const p0 = arr[Math.max(i - 2, 0)];
+    const p1 = arr[i - 1];
+    const p2 = p;
+    const p3 = arr[Math.min(i + 1, arr.length - 1)];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    return `${path} C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+  }, '');
+
+  const areaPath = curvePath
+    ? `${curvePath} L${points[points.length - 1].x},${PAD_T + plotH} L${points[0].x},${PAD_T + plotH} Z`
+    : '';
+
+  // Threshold lines
+  const y70 = PAD_T + plotH - (70 / 100) * plotH;
+  const y40 = PAD_T + plotH - (40 / 100) * plotH;
 
   return (
-    <svg viewBox="0 0 600 165" style={{ width: '100%', height: '100%' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: '100%' }}>
       <defs>
-        <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#2563eb" stopOpacity="0.1" />
+        <linearGradient id="riskGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#2563eb" stopOpacity="0.15" />
           <stop offset="100%" stopColor="#2563eb" stopOpacity="0.01" />
         </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+          <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
       </defs>
-      {[0, 40, 80, 120, 160].map(y => (
-        <line key={y} x1="40" y1={y} x2="575" y2={y} stroke="#e2e6ee" strokeWidth="0.5" />
-      ))}
-      {['100', '75', '50', '25', '0'].map((l, i) => (
-        <text key={l} x="34" y={i * 40 + 5} fontSize="9" fill="#94a3b8" textAnchor="end" fontFamily="JetBrains Mono">{l}</text>
-      ))}
-      <path d={areaPath} fill="url(#cg)" />
-      <polyline points={linePoints} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      {points.map((p, i) => (
-        <g key={i}>
-          <circle cx={p.x} cy={p.y} r="3.5" fill="white" stroke="#2563eb" strokeWidth="1.5" />
-          {p.score !== undefined && (
-            <text x={p.x} y={p.y - 9} fontSize="9" fill="#2563eb" textAnchor="middle" fontWeight="600" fontFamily="JetBrains Mono">{p.score}</text>
-          )}
-        </g>
+
+      {/* Grid lines */}
+      {[0, 25, 50, 75, 100].map(v => {
+        const y = PAD_T + plotH - (v / 100) * plotH;
+        return (
+          <g key={v}>
+            <line x1={PAD_L} y1={y} x2={W - PAD_R} y2={y} stroke="#edf0f5" strokeWidth="0.7" />
+            <text x={PAD_L - 6} y={y + 3.5} fontSize="9" fill="#94a3b8" textAnchor="end" fontFamily="JetBrains Mono">{v}</text>
+          </g>
+        );
+      })}
+
+      {/* Threshold zones */}
+      <rect x={PAD_L} y={PAD_T} width={plotW} height={y70 - PAD_T} fill="#fef2f2" opacity="0.4" rx="2" />
+      <rect x={PAD_L} y={y70} width={plotW} height={y40 - y70} fill="#fffbeb" opacity="0.3" rx="2" />
+
+      {/* Threshold lines */}
+      <line x1={PAD_L} y1={y70} x2={W - PAD_R} y2={y70} stroke="#dc2626" strokeWidth="0.7" strokeDasharray="4 3" opacity="0.5" />
+      <line x1={PAD_L} y1={y40} x2={W - PAD_R} y2={y40} stroke="#d97706" strokeWidth="0.7" strokeDasharray="4 3" opacity="0.4" />
+      <text x={W - PAD_R + 2} y={y70 + 3} fontSize="7.5" fill="#dc2626" opacity="0.7" fontFamily="JetBrains Mono">70</text>
+      <text x={W - PAD_R + 2} y={y40 + 3} fontSize="7.5" fill="#d97706" opacity="0.6" fontFamily="JetBrains Mono">40</text>
+
+      {/* Area fill + curve */}
+      {areaPath && <path d={areaPath} fill="url(#riskGrad)" />}
+      {curvePath && <path d={curvePath} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" filter="url(#glow)" />}
+
+      {/* Data points */}
+      {points.map((p, i) => {
+        const color = p.score >= 70 ? '#dc2626' : p.score >= 40 ? '#d97706' : '#2563eb';
+        return (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="4" fill="white" stroke={color} strokeWidth="2" />
+            <text x={p.x} y={p.y - 10} fontSize="9" fill={color} textAnchor="middle" fontWeight="700" fontFamily="JetBrains Mono">
+              {p.score}
+            </text>
+            {p.turbine && (
+              <text x={p.x} y={p.y + 14} fontSize="7" fill="#94a3b8" textAnchor="middle" fontFamily="JetBrains Mono">
+                {p.turbine}
+              </text>
+            )}
+          </g>
+        );
+      })}
+
+      {/* Time labels on X axis */}
+      {timeLabels.map((tl, i) => (
+        <text key={i} x={tl.x} y={H - 6} fontSize="8" fill="#94a3b8" textAnchor="middle" fontFamily="JetBrains Mono">
+          {tl.label}
+        </text>
       ))}
     </svg>
   );
 }
 
-function ManualMeasurement() {
-  const { t } = useLanguage();
-  const [values, setValues] = useState({
-    wind_speed: '',
-    power_output: '',
-    generator_rpm: '',
-    gearbox_oil_temp: '',
-    vibration: '',
-  });
-  const [result, setResult] = useState(null);
-  const [calculating, setCalculating] = useState(false);
-
-  const handleChange = (field, val) => {
-    setValues(prev => ({ ...prev, [field]: val }));
-    setResult(null);
-  };
-
-  const calculate = () => {
-    setCalculating(true);
-    const ws = parseFloat(values.wind_speed) || 0;
-    const po = parseFloat(values.power_output) || 0;
-    const rpm = parseFloat(values.generator_rpm) || 0;
-    const temp = parseFloat(values.gearbox_oil_temp) || 0;
-    const vib = parseFloat(values.vibration) || 0;
-
-    const expectedPower = ws > 3 ? Math.min(ws * ws * ws * 0.0005, 3.0) : 0;
-    const powerDeviation = Math.abs(po - expectedPower) / (expectedPower + 0.1);
-    const expectedRpm = ws > 3 ? ws * 120 : 0;
-    const rpmDeviation = rpm > 0 ? Math.abs(rpm - expectedRpm) / (expectedRpm + 1) : 0;
-    const tempRisk = temp > 80 ? 0.9 : temp > 65 ? 0.5 : temp > 50 ? 0.2 : 0.05;
-    const vibRisk = vib > 6 ? 0.95 : vib > 3 ? 0.5 : vib > 1.5 ? 0.15 : 0.03;
-
-    const riskScore = Math.min(100, Math.round(
-      (powerDeviation * 25 + rpmDeviation * 20 + tempRisk * 100 * 0.3 + vibRisk * 100 * 0.25)
-    ));
-
-    const severity = riskScore >= 70 ? t('critical') : riskScore >= 40 ? t('warning') : t('normal');
-    const severityClass = riskScore >= 70 ? 'crit' : riskScore >= 40 ? 'warn' : 'ok';
-
-    setTimeout(() => {
-      setResult({ riskScore, severity, severityClass, powerDeviation: (powerDeviation * 100).toFixed(1), tempRisk: (tempRisk * 100).toFixed(0), vibRisk: (vibRisk * 100).toFixed(0) });
-      setCalculating(false);
-    }, 500);
-  };
-
-  const fields = [
-    { key: 'wind_speed', label: t('windSpeed'), unit: 'm/s', placeholder: '8.5' },
-    { key: 'power_output', label: t('powerOutput'), unit: 'MW', placeholder: '2.1' },
-    { key: 'generator_rpm', label: t('generatorRpm'), unit: 'rpm', placeholder: '1200' },
-    { key: 'gearbox_oil_temp', label: t('gearboxTemp'), unit: '°C', placeholder: '45' },
-    { key: 'vibration', label: t('vibrationLevel'), unit: 'mm/s', placeholder: '1.2' },
-  ];
-
-  return (
-    <div className="panel">
-      <div className="panel-header">
-        <span className="panel-title">{t('manualMeasurement')}</span>
-        <span style={{ fontSize: '10px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>{t('enterSensorValues')}</span>
-      </div>
-      <div className="panel-body">
-        <div className="manual-fields">
-          {fields.map(f => (
-            <div key={f.key}>
-              <div style={{ fontSize: '9.5px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, marginBottom: '3px' }}>
-                {f.label}
-              </div>
-              <div style={{ position: 'relative' }}>
-                <input
-                  className="input"
-                  type="number"
-                  step="0.1"
-                  placeholder={f.placeholder}
-                  value={values[f.key]}
-                  onChange={e => handleChange(f.key, e.target.value)}
-                  style={{ paddingRight: '2.2rem', fontSize: '12.5px', fontFamily: "'JetBrains Mono', monospace" }}
-                />
-                <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: 'var(--muted)' }}>
-                  {f.unit}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="manual-result-row">
-          <button className="btn btn-primary" onClick={calculate} disabled={calculating} style={{ fontSize: '12px' }}>
-            <Calculator size={14} /> {calculating ? t('calculating') : t('calculateRisk')}
-          </button>
-          {result && (
-            <div className="manual-result-info">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{t('riskScore')}:</span>
-                <span className={`alarm-badge ${result.severityClass}`} style={{ fontSize: '13px', padding: '3px 10px' }}>
-                  {result.riskScore}/100 — {result.severity}
-                </span>
-              </div>
-              <div style={{ fontSize: '10.5px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>
-                {t('powerDeviation')}: %{result.powerDeviation} · {t('tempRisk')}: %{result.tempRisk} · {t('vibRisk')}: %{result.vibRisk}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -335,7 +323,18 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <ManualMeasurement />
+      {/* Quick Measure - links to full page */}
+      <Link to="/measurement" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <div className="panel" style={{ cursor: 'pointer', transition: 'box-shadow 0.15s' }}>
+          <div className="panel-header">
+            <span className="panel-title"><Calculator size={14} style={{ marginRight: 6 }} />{t('quickMeasure')}</span>
+            <span className="btn btn-ghost btn-sm">{t('goToMeasurement')} <ArrowRight size={12} /></span>
+          </div>
+          <div className="panel-body" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--muted)', fontSize: '13px' }}>
+            {t('enterSensorValues')}
+          </div>
+        </div>
+      </Link>
     </>
   );
 }

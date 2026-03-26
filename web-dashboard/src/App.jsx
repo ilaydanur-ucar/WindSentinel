@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import { TurbineList, TurbineDetail } from './pages/Turbines';
 import Alerts from './pages/Alerts';
+import Measurement from './pages/Measurement';
 
 export default function App() {
   const { user, loading, login, logout } = useAuth();
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="/turbines" element={<TurbineList />} />
             <Route path="/turbines/:turbineId" element={<TurbineDetail />} />
             <Route path="/alerts" element={<Alerts />} />
+            <Route path="/measurement" element={<Measurement />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </Layout>

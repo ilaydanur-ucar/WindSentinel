@@ -95,6 +95,22 @@ const translations = {
     gearboxTemp: 'Dişli Kutusu Sıcaklığı',
     vibrationLevel: 'Titreşim Seviyesi',
 
+    // Measurement page
+    measurementPage: 'Manuel Ölçüm',
+    measurementDesc: 'Sensör değerlerini girerek anlık risk analizi yapın',
+    quickMeasure: 'Hızlı Ölçüm',
+    goToMeasurement: 'Detaylı ölçüm sayfasına git',
+    selectTurbine: 'Türbin Seçin',
+    measurementHistory: 'Ölçüm Geçmişi',
+    noMeasurement: 'Henüz ölçüm yapılmadı',
+    clearHistory: 'Geçmişi Temizle',
+
+    // Reports
+    downloadCSV: 'CSV İndir',
+    downloadPDF: 'PDF İndir',
+    reportAlerts: 'Alarm Raporu',
+    reportTurbines: 'Türbin Raporu',
+
     // Login
     loginTitle: 'Giriş Yap',
     loginSubtitle: 'Türbin izleme paneline erişim için giriş yapın.',
@@ -261,6 +277,20 @@ const translations = {
     generatorRpm: 'Generator RPM',
     gearboxTemp: 'Gearbox Temperature',
     vibrationLevel: 'Vibration Level',
+
+    measurementPage: 'Manual Measurement',
+    measurementDesc: 'Enter sensor values for instant risk analysis',
+    quickMeasure: 'Quick Measure',
+    goToMeasurement: 'Go to detailed measurement page',
+    selectTurbine: 'Select Turbine',
+    measurementHistory: 'Measurement History',
+    noMeasurement: 'No measurements yet',
+    clearHistory: 'Clear History',
+
+    downloadCSV: 'Download CSV',
+    downloadPDF: 'Download PDF',
+    reportAlerts: 'Alerts Report',
+    reportTurbines: 'Turbines Report',
 
     loginTitle: 'Sign In',
     loginSubtitle: 'Sign in to access the turbine monitoring panel.',

@@ -1,18 +1,9 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, AlertTriangle, Fan, Bell, LogOut, Activity, X } from 'lucide-react';
+import { LayoutDashboard, AlertTriangle, Fan, Bell, LogOut, Activity, X, Calculator } from 'lucide-react';
 import { api } from '../services/api';
 import { useLanguage } from '../hooks/useLanguage';
-
-function timeAgo(dateStr, t) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return t('justNow');
-  if (mins < 60) return `${mins} ${t('minutesAgo')}`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} ${t('hoursAgo')}`;
-  return `${Math.floor(hours / 24)} ${t('daysAgo')}`;
-}
+import { timeAgo } from '../utils/formatters';
 
 export default function Layout({ children, onLogout, user }) {
   const { lang, setLang, t } = useLanguage();
@@ -143,6 +134,9 @@ export default function Layout({ children, onLogout, user }) {
           <NavLink to="/alerts" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
             <span className="sidebar-link-left"><AlertTriangle size={15} /> {t('alarms')}</span>
             {activeCount > 0 && <span className="sidebar-badge">{activeCount}</span>}
+          </NavLink>
+          <NavLink to="/measurement" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+            <span className="sidebar-link-left"><Calculator size={15} /> {t('measurementPage')}</span>
           </NavLink>
 
           <div className="sidebar-divider"></div>

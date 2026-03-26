@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Download } from 'lucide-react';
 import { api } from '../services/api';
 import { useLanguage } from '../hooks/useLanguage';
+import { generateCSV, generatePDF } from '../services/reportService';
 
 export default function Alerts() {
   const { t, lang } = useLanguage();
@@ -44,8 +45,38 @@ export default function Alerts() {
             {label}
           </button>
         ))}
-        <span className="text-muted text-sm" style={{ marginLeft: 'auto', fontFamily: "'JetBrains Mono', monospace" }}>
-          {pagination.total || 0} {t('records')}
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
+          <button className="btn btn-ghost btn-sm" style={{ fontSize: '10.5px' }} onClick={() => {
+            const cols = [
+              { key: 'id', label: t('id') },
+              { key: 'turbine_id', label: t('turbine') },
+              { key: 'anomaly_type', label: t('type') },
+              { key: 'anomaly_score', label: t('score'), format: v => Math.round(v * 100) },
+              { key: 'confidence', label: t('confidence'), format: v => Math.round(v * 100) + '%' },
+              { key: 'status', label: t('status'), format: v => v === 'active' ? t('activeStatus') : t('resolvedStatus') },
+              { key: 'created_at', label: t('date'), format: v => new Date(v).toLocaleString(locale) },
+            ];
+            generateCSV(alerts, cols, 'wind-sentinel-alerts.csv');
+          }}>
+            <Download size={11} /> CSV
+          </button>
+          <button className="btn btn-ghost btn-sm" style={{ fontSize: '10.5px' }} onClick={() => {
+            const cols = [
+              { key: 'id', label: t('id') },
+              { key: 'turbine_id', label: t('turbine') },
+              { key: 'anomaly_type', label: t('type') },
+              { key: 'anomaly_score', label: t('score'), format: v => Math.round(v * 100) },
+              { key: 'confidence', label: t('confidence'), format: v => Math.round(v * 100) + '%' },
+              { key: 'status', label: t('status'), format: v => v === 'active' ? t('activeStatus') : t('resolvedStatus') },
+              { key: 'created_at', label: t('date'), format: v => new Date(v).toLocaleString(locale) },
+            ];
+            generatePDF(alerts, cols, t('reportAlerts'), 'wind-sentinel-alerts.pdf');
+          }}>
+            <Download size={11} /> PDF
+          </button>
+          <span className="text-muted text-sm" style={{ fontFamily: "'JetBrains Mono', monospace", marginLeft: '0.3rem' }}>
+            {pagination.total || 0} {t('records')}
+          </span>
         </span>
       </div>
 

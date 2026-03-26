@@ -501,7 +501,7 @@ a { color: var(--accent); text-decoration: none; }
 .alarm-badge.info { background: var(--accent-bg); color: var(--accent); }
 
 /* ── CHART ── */
-.chart-area { height: 160px; position: relative; }
+.chart-area { height: 240px; position: relative; }
 
 /* ── TABLE ── */
 .table { width: 100%; border-collapse: collapse; }
