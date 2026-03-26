@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, onBack }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -39,6 +39,11 @@ export default function Login({ onLogin }) {
           </div>
         </div>
         <p className="login-subtitle">Türbin izleme paneline erişim için giriş yapın.</p>
+        {onBack && (
+          <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '12px', marginBottom: '0.5rem', fontFamily: 'inherit' }}>
+            ← Ana sayfaya dön
+          </button>
+        )}
 
         {error && <div className="error-msg">{error}</div>}
 

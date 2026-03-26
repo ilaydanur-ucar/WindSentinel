@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { LanguageProvider } from './hooks/useLanguage';
 import Layout from './components/Layout';
 import AlertToast from './components/AlertToast';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import { TurbineList, TurbineDetail } from './pages/Turbines';
@@ -10,13 +12,21 @@ import Alerts from './pages/Alerts';
 
 export default function App() {
   const { user, loading, login, logout } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
 
   if (loading) return null;
 
   if (!user) {
+    if (showLogin) {
+      return (
+        <LanguageProvider>
+          <Login onLogin={login} onBack={() => setShowLogin(false)} />
+        </LanguageProvider>
+      );
+    }
     return (
       <LanguageProvider>
-        <Login onLogin={login} />
+        <Landing onShowLogin={() => setShowLogin(true)} />
       </LanguageProvider>
     );
   }
