@@ -33,38 +33,38 @@ export default function Landing({ onShowLogin }) {
 
   const features = [
     {
-      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d6fb8" strokeWidth="2" strokeLinecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
+      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a0bdd6" strokeWidth="2" strokeLinecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
       title: t('feat1Title'), desc: t('feat1Desc'),
     },
     {
-      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d6fb8" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>,
+      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a0bdd6" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>,
       title: t('feat2Title'), desc: t('feat2Desc'),
     },
     {
-      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d6fb8" strokeWidth="2" strokeLinecap="round"><path d="M18 20V10M12 20V4M6 20v-6" /></svg>,
+      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a0bdd6" strokeWidth="2" strokeLinecap="round"><path d="M18 20V10M12 20V4M6 20v-6" /></svg>,
       title: t('feat3Title'), desc: t('feat3Desc'),
     },
     {
-      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d6fb8" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a0bdd6" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
       title: t('feat4Title'), desc: t('feat4Desc'),
     },
   ];
 
   const audiences = [
     {
-      icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1d6fb8" strokeWidth="1.8" strokeLinecap="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>,
+      icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a0bdd6" strokeWidth="1.8" strokeLinecap="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>,
       title: t('aud1Title'), desc: t('aud1Desc'),
     },
     {
-      icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1d6fb8" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,
+      icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a0bdd6" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,
       title: t('aud2Title'), desc: t('aud2Desc'),
     },
     {
-      icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1d6fb8" strokeWidth="1.8" strokeLinecap="round"><path d="M12 20V10M18 20V4M6 20v-4"/><path d="M2 20h20"/></svg>,
+      icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a0bdd6" strokeWidth="1.8" strokeLinecap="round"><path d="M12 20V10M18 20V4M6 20v-4"/><path d="M2 20h20"/></svg>,
       title: t('aud3Title'), desc: t('aud3Desc'),
     },
     {
-      icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1d6fb8" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>,
+      icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a0bdd6" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>,
       title: t('aud4Title'), desc: t('aud4Desc'),
     },
   ];
@@ -116,11 +116,11 @@ export default function Landing({ onShowLogin }) {
       <nav className={`landing-nav ${scrolled ? 'nav-scrolled' : ''}`}>
         <div className="landing-logo">
           <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M50 5C28 5 15 18 15 35v25c0 10 5 19 14 24l18 10c2 1 4 1 6 0l18-10c9-5 14-14 14-24V35C85 18 72 5 50 5z" fill="none" stroke="#1d6fb8" strokeWidth="5" strokeLinejoin="round"/>
+            <path d="M50 5C28 5 15 18 15 35v25c0 10 5 19 14 24l18 10c2 1 4 1 6 0l18-10c9-5 14-14 14-24V35C85 18 72 5 50 5z" fill="none" stroke="#a0bdd6" strokeWidth="5" strokeLinejoin="round"/>
             <circle cx="50" cy="52" r="5" fill="#1d6fb8"/>
-            <line x1="50" y1="47" x2="50" y2="20" stroke="#1d6fb8" strokeWidth="6" strokeLinecap="round"/>
-            <line x1="54" y1="55" x2="74" y2="72" stroke="#1d6fb8" strokeWidth="6" strokeLinecap="round"/>
-            <line x1="46" y1="55" x2="26" y2="72" stroke="#1d6fb8" strokeWidth="6" strokeLinecap="round"/>
+            <line x1="50" y1="47" x2="50" y2="20" stroke="#a0bdd6" strokeWidth="6" strokeLinecap="round"/>
+            <line x1="54" y1="55" x2="74" y2="72" stroke="#a0bdd6" strokeWidth="6" strokeLinecap="round"/>
+            <line x1="46" y1="55" x2="26" y2="72" stroke="#a0bdd6" strokeWidth="6" strokeLinecap="round"/>
           </svg>
           <div>
             <span className="landing-brand">WIND <span>SENTINEL</span></span>
@@ -239,7 +239,7 @@ export default function Landing({ onShowLogin }) {
             </div>
             <div className="step-connector">
               <svg width="40" height="24" viewBox="0 0 40 24" fill="none">
-                <path d="M0 12h36M30 6l6 6-6 6" stroke="#1d6fb8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M0 12h36M30 6l6 6-6 6" stroke="#a0bdd6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <div className="step-card">
@@ -250,7 +250,7 @@ export default function Landing({ onShowLogin }) {
             </div>
             <div className="step-connector">
               <svg width="40" height="24" viewBox="0 0 40 24" fill="none">
-                <path d="M0 12h36M30 6l6 6-6 6" stroke="#1d6fb8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M0 12h36M30 6l6 6-6 6" stroke="#a0bdd6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <div className="step-card">

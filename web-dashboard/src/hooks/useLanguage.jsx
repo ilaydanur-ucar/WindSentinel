@@ -111,7 +111,7 @@ const translations = {
 
     // Landing
     landingSubtitle: 'ERKEN ARIZA TESPİT SİSTEMİ',
-    navFeatures: 'Özellikler',
+    navFeatures: 'Çözümlerimiz',
     navAudience: 'Hedef Kitlemiz',
     navHow: 'Nasıl Çalışır',
     navAbout: 'Hakkımızda',
@@ -276,7 +276,7 @@ const translations = {
 
     // Landing
     landingSubtitle: 'EARLY FAULT DETECTION SYSTEM',
-    navFeatures: 'Features',
+    navFeatures: 'Our Solutions',
     navAudience: 'Target Audience',
     navHow: 'How It Works',
     navAbout: 'About Us',

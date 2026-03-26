@@ -2,15 +2,16 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Activity, ShieldCheck, Calculator } from 'lucide-react';
 import { api } from '../services/api';
+import { useLanguage } from '../hooks/useLanguage';
 
-function timeAgo(dateStr) {
+function timeAgo(dateStr, t) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Az önce';
-  if (mins < 60) return `${mins} dk önce`;
+  if (mins < 1) return t('justNow');
+  if (mins < 60) return `${mins} ${t('minutesAgo')}`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} saat önce`;
-  return `${Math.floor(hours / 24)} gün önce`;
+  if (hours < 24) return `${hours} ${t('hoursAgo')}`;
+  return `${Math.floor(hours / 24)} ${t('daysAgo')}`;
 }
 
 function RiskChart({ alerts }) {
@@ -53,8 +54,8 @@ function RiskChart({ alerts }) {
   );
 }
 
-// Manuel Ölçüm Paneli
 function ManualMeasurement() {
+  const { t } = useLanguage();
   const [values, setValues] = useState({
     wind_speed: '',
     power_output: '',
@@ -72,34 +73,24 @@ function ManualMeasurement() {
 
   const calculate = () => {
     setCalculating(true);
-
-    // Risk hesaplama: sensör değerlerinden anomali skoru türet
     const ws = parseFloat(values.wind_speed) || 0;
     const po = parseFloat(values.power_output) || 0;
     const rpm = parseFloat(values.generator_rpm) || 0;
     const temp = parseFloat(values.gearbox_oil_temp) || 0;
     const vib = parseFloat(values.vibration) || 0;
 
-    // Güç eğrisi sapması: beklenen güç vs gerçek güç
     const expectedPower = ws > 3 ? Math.min(ws * ws * ws * 0.0005, 3.0) : 0;
     const powerDeviation = Math.abs(po - expectedPower) / (expectedPower + 0.1);
-
-    // RPM anomalisi: rüzgar hızına göre beklenen RPM sapması
     const expectedRpm = ws > 3 ? ws * 120 : 0;
     const rpmDeviation = rpm > 0 ? Math.abs(rpm - expectedRpm) / (expectedRpm + 1) : 0;
-
-    // Sıcaklık riski: 65°C üstü uyarı, 80°C üstü kritik
     const tempRisk = temp > 80 ? 0.9 : temp > 65 ? 0.5 : temp > 50 ? 0.2 : 0.05;
-
-    // Titreşim riski: 3 mm/s üstü uyarı, 6 mm/s üstü kritik
     const vibRisk = vib > 6 ? 0.95 : vib > 3 ? 0.5 : vib > 1.5 ? 0.15 : 0.03;
 
-    // Ağırlıklı toplam risk skoru
     const riskScore = Math.min(100, Math.round(
       (powerDeviation * 25 + rpmDeviation * 20 + tempRisk * 100 * 0.3 + vibRisk * 100 * 0.25)
     ));
 
-    const severity = riskScore >= 70 ? 'KRİTİK' : riskScore >= 40 ? 'UYARI' : 'NORMAL';
+    const severity = riskScore >= 70 ? t('critical') : riskScore >= 40 ? t('warning') : t('normal');
     const severityClass = riskScore >= 70 ? 'crit' : riskScore >= 40 ? 'warn' : 'ok';
 
     setTimeout(() => {
@@ -109,21 +100,21 @@ function ManualMeasurement() {
   };
 
   const fields = [
-    { key: 'wind_speed', label: 'Rüzgâr Hızı', unit: 'm/s', placeholder: '8.5' },
-    { key: 'power_output', label: 'Güç Üretimi', unit: 'MW', placeholder: '2.1' },
-    { key: 'generator_rpm', label: 'Jeneratör RPM', unit: 'rpm', placeholder: '1200' },
-    { key: 'gearbox_oil_temp', label: 'Dişli Kutusu Sıcaklığı', unit: '°C', placeholder: '45' },
-    { key: 'vibration', label: 'Titreşim Seviyesi', unit: 'mm/s', placeholder: '1.2' },
+    { key: 'wind_speed', label: t('windSpeed'), unit: 'm/s', placeholder: '8.5' },
+    { key: 'power_output', label: t('powerOutput'), unit: 'MW', placeholder: '2.1' },
+    { key: 'generator_rpm', label: t('generatorRpm'), unit: 'rpm', placeholder: '1200' },
+    { key: 'gearbox_oil_temp', label: t('gearboxTemp'), unit: '°C', placeholder: '45' },
+    { key: 'vibration', label: t('vibrationLevel'), unit: 'mm/s', placeholder: '1.2' },
   ];
 
   return (
     <div className="panel">
       <div className="panel-header">
-        <span className="panel-title">Manuel Ölçüm</span>
-        <span style={{ fontSize: '10px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>Sensör değerlerini girin</span>
+        <span className="panel-title">{t('manualMeasurement')}</span>
+        <span style={{ fontSize: '10px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>{t('enterSensorValues')}</span>
       </div>
       <div className="panel-body">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <div className="manual-fields">
           {fields.map(f => (
             <div key={f.key}>
               <div style={{ fontSize: '9.5px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, marginBottom: '3px' }}>
@@ -146,20 +137,20 @@ function ManualMeasurement() {
             </div>
           ))}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="manual-result-row">
           <button className="btn btn-primary" onClick={calculate} disabled={calculating} style={{ fontSize: '12px' }}>
-            <Calculator size={14} /> {calculating ? 'Hesaplanıyor...' : 'Risk Hesapla'}
+            <Calculator size={14} /> {calculating ? t('calculating') : t('calculateRisk')}
           </button>
           {result && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+            <div className="manual-result-info">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Risk Skoru:</span>
+                <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{t('riskScore')}:</span>
                 <span className={`alarm-badge ${result.severityClass}`} style={{ fontSize: '13px', padding: '3px 10px' }}>
                   {result.riskScore}/100 — {result.severity}
                 </span>
               </div>
               <div style={{ fontSize: '10.5px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>
-                Güç Sapması: %{result.powerDeviation} · Sıcaklık Riski: %{result.tempRisk} · Titreşim Riski: %{result.vibRisk}
+                {t('powerDeviation')}: %{result.powerDeviation} · {t('tempRisk')}: %{result.tempRisk} · {t('vibRisk')}: %{result.vibRisk}
               </div>
             </div>
           )}
@@ -170,6 +161,7 @@ function ManualMeasurement() {
 }
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const [stats, setStats] = useState(null);
   const [turbines, setTurbines] = useState([]);
   const [alerts, setAlerts] = useState([]);
@@ -178,13 +170,13 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [s, t, a] = await Promise.all([
+        const [s, tr, a] = await Promise.all([
           api.getAlertStats(),
           api.getTurbines(),
           api.getAlerts({ limit: 8, sort: 'created_at_desc' }),
         ]);
         setStats(s.data);
-        setTurbines(t.data);
+        setTurbines(tr.data);
         setAlerts(a.data);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
@@ -194,9 +186,9 @@ export default function Dashboard() {
     return () => clearInterval(iv);
   }, []);
 
-  if (loading) return <div className="empty-state"><Activity size={20} /><div style={{ marginTop: 8 }}>Yükleniyor...</div></div>;
+  if (loading) return <div className="empty-state"><Activity size={20} /><div style={{ marginTop: 8 }}>{t('loading')}</div></div>;
 
-  const onlineCount = turbines.filter(t => t.status === 'online').length;
+  const onlineCount = turbines.filter(tb => tb.status === 'online').length;
   const activeAlerts = Number(stats?.active_alerts || 0);
   const resolvedAlerts = Number(stats?.resolved_alerts || 0);
   const totalAlerts = Number(stats?.total_alerts || 0);
@@ -211,54 +203,52 @@ export default function Dashboard() {
       <div className="page-header">
         <div className="page-header-row">
           <div>
-            <div className="page-title">Kontrol Paneli</div>
-            <div className="page-sub">Wind Farm A — Gerçek zamanlı izleme</div>
+            <div className="page-title">{t('controlPanel')}</div>
+            <div className="page-sub">Wind Farm A — {t('realTimeMonitoring')}</div>
           </div>
           <div className="flex gap-2">
-            <span className="btn btn-ghost btn-sm">Son 24 Saat</span>
+            <span className="btn btn-ghost btn-sm">{t('last24h')}</span>
           </div>
         </div>
       </div>
 
-      {/* İstatistik Kartları */}
       <div className="stats-row">
         <div className="stat-card blue">
-          <div className="stat-label">Aktif Türbin</div>
+          <div className="stat-label">{t('activeTurbine')}</div>
           <div className="stat-value blue">{onlineCount}<span style={{ fontSize: '0.7em', color: 'var(--muted)' }}>/{turbines.length}</span></div>
-          <div className="stat-sub">{turbines.length - onlineCount === 0 ? 'Tümü operasyonel' : `${turbines.length - onlineCount} devre dışı`}</div>
+          <div className="stat-sub">{turbines.length - onlineCount === 0 ? t('allOperational') : `${turbines.length - onlineCount} ${t('offline')}`}</div>
         </div>
 
         <div className="stat-card green">
-          <div className="stat-label">İncelenme Oranı</div>
+          <div className="stat-label">{t('resolutionRate')}</div>
           <div className="stat-value green">{resolutionRate}%</div>
-          <div className="stat-sub">{resolvedAlerts}/{totalAlerts} incelendi</div>
+          <div className="stat-sub">{resolvedAlerts}/{totalAlerts} {t('resolved')}</div>
         </div>
 
         <div className="stat-card amber">
-          <div className="stat-label">Ort. Risk Skoru</div>
+          <div className="stat-label">{t('avgRiskScore')}</div>
           <div className="stat-value amber">{avgRisk}</div>
-          <div className="stat-sub">/100 puan</div>
+          <div className="stat-sub">{t('points100')}</div>
         </div>
 
         <div className="stat-card red">
-          <div className="stat-label">Aktif Alarm</div>
+          <div className="stat-label">{t('activeAlarm')}</div>
           <div className="stat-value red">{activeAlerts}</div>
-          <div className="stat-sub">{affectedTurbines} türbin etkilendi</div>
+          <div className="stat-sub">{affectedTurbines} {t('turbinesAffected')}</div>
         </div>
       </div>
 
-      {/* Türbin Risk Durumu + Alarmlar */}
       <div className="grid-2-wide mb-3">
         <div className="panel">
           <div className="panel-header">
-            <span className="panel-title">Türbin Risk Durumu</span>
-            <Link to="/turbines" className="btn btn-ghost btn-sm">Tümü <ArrowRight size={12} /></Link>
+            <span className="panel-title">{t('turbineRiskStatus')}</span>
+            <Link to="/turbines" className="btn btn-ghost btn-sm">{t('all')} <ArrowRight size={12} /></Link>
           </div>
           <div className="panel-body">
             <div className="turbine-grid">
-              {turbines.map(t => {
-                const alertCount = Number(t.active_alerts);
-                const turbineAlerts = alerts.filter(a => a.turbine_id === t.turbine_id && a.status === 'active');
+              {turbines.map(tb => {
+                const alertCount = Number(tb.active_alerts);
+                const turbineAlerts = alerts.filter(a => a.turbine_id === tb.turbine_id && a.status === 'active');
                 const riskScore = turbineAlerts.length > 0
                   ? Math.round(turbineAlerts.reduce((s, a) => s + a.anomaly_score, 0) / turbineAlerts.length * 100)
                   : 0;
@@ -267,28 +257,28 @@ export default function Dashboard() {
                 const dotClass = riskScore >= 70 ? 'dot-crit' : riskScore >= 30 ? 'dot-warn' : 'dot-ok';
 
                 return (
-                  <Link key={t.turbine_id} to={`/turbines/${t.turbine_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <Link key={tb.turbine_id} to={`/turbines/${tb.turbine_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <div className={`turbine-card ${cardClass}`}>
                       <div className="turbine-top">
-                        <span className="turbine-id">{t.turbine_id}</span>
+                        <span className="turbine-id">{tb.turbine_id}</span>
                         <div className={`turbine-status-dot ${dotClass}`}></div>
                       </div>
-                      <div className="risk-label">Risk Skoru: {riskScore}/100</div>
+                      <div className="risk-label">{t('riskScore')}: {riskScore}/100</div>
                       <div className="risk-bar">
                         <div className={`risk-fill ${riskClass}`} style={{ width: `${Math.max(riskScore, 3)}%` }}></div>
                       </div>
                       <div className="turbine-metrics">
                         <div className="t-metric">
                           <div className="t-metric-val">{alertCount}</div>
-                          <div className="t-metric-lbl">Alarm</div>
+                          <div className="t-metric-lbl">{t('alarm')}</div>
                         </div>
                         <div className="t-metric">
-                          <div className="t-metric-val">{t.farm_name?.replace('Wind Farm ', '') || 'A'}</div>
-                          <div className="t-metric-lbl">Çiftlik</div>
+                          <div className="t-metric-val">{tb.farm_name?.replace('Wind Farm ', '') || 'A'}</div>
+                          <div className="t-metric-lbl">{t('farm')}</div>
                         </div>
                         <div className="t-metric">
-                          <div className="t-metric-val">{t.status === 'online' ? 'AKTİF' : 'KAPALI'}</div>
-                          <div className="t-metric-lbl">Durum</div>
+                          <div className="t-metric-val">{tb.status === 'online' ? t('active') : t('closed')}</div>
+                          <div className="t-metric-lbl">{t('status')}</div>
                         </div>
                       </div>
                     </div>
@@ -301,12 +291,12 @@ export default function Dashboard() {
 
         <div className="panel">
           <div className="panel-header">
-            <span className="panel-title">Aktif Alarmlar</span>
-            <Link to="/alerts" className="btn btn-ghost btn-sm">Tümü <ArrowRight size={12} /></Link>
+            <span className="panel-title">{t('activeAlarms')}</span>
+            <Link to="/alerts" className="btn btn-ghost btn-sm">{t('all')} <ArrowRight size={12} /></Link>
           </div>
           <div className="alarm-list">
             {alerts.length === 0 ? (
-              <div className="empty-state"><ShieldCheck size={18} /><div style={{ marginTop: 6 }}>Aktif alarm yok</div></div>
+              <div className="empty-state"><ShieldCheck size={18} /><div style={{ marginTop: 6 }}>{t('noActiveAlarm')}</div><div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: 2 }}>{t('systemHealthy')}</div></div>
             ) : (
               alerts.slice(0, 6).map(a => {
                 const score = Math.round(a.anomaly_score * 100);
@@ -317,10 +307,10 @@ export default function Dashboard() {
                     <div className="alarm-dot" style={{ background: dotColor }}></div>
                     <div className="alarm-info">
                       <div className="alarm-title">{a.turbine_id} — {a.anomaly_type}</div>
-                      <div className="alarm-meta">Skor: {score} · {timeAgo(a.created_at)}</div>
+                      <div className="alarm-meta">{t('score')}: {score} · {timeAgo(a.created_at, t)}</div>
                     </div>
                     <span className={`alarm-badge ${severity}`}>
-                      {severity === 'crit' ? 'KRİTİK' : severity === 'warn' ? 'UYARI' : 'BİLGİ'}
+                      {severity === 'crit' ? t('severityCritical') : severity === 'warn' ? t('severityWarning') : t('severityActive')}
                     </span>
                   </div>
                 );
@@ -330,13 +320,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Risk Skoru Trendi */}
       <div className="panel mb-3">
         <div className="panel-header">
-          <span className="panel-title">Risk Skoru Trendi</span>
+          <span className="panel-title">{t('riskScoreTrend')}</span>
           <div className="flex gap-2">
-            <span className="btn btn-filter btn-sm active" style={{ fontSize: '10px' }}>24S</span>
-            <span className="btn btn-filter btn-sm" style={{ fontSize: '10px' }}>7G</span>
+            <span className="btn btn-filter btn-sm active" style={{ fontSize: '10px' }}>24H</span>
+            <span className="btn btn-filter btn-sm" style={{ fontSize: '10px' }}>7D</span>
           </div>
         </div>
         <div className="panel-body">
@@ -346,7 +335,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Manuel Ölçüm */}
       <ManualMeasurement />
     </>
   );

@@ -131,7 +131,7 @@ export default function Layout({ children, onLogout, user }) {
       </header>
 
       <div className="main-wrapper">
-        {/* Sidebar */}
+        {/* Sidebar - desktop only */}
         <aside className="sidebar">
           <div className="sidebar-label">{t('monitoring')}</div>
           <NavLink to="/" end className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
@@ -163,6 +163,25 @@ export default function Layout({ children, onLogout, user }) {
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="mobile-nav">
+        <NavLink to="/" end className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <LayoutDashboard size={18} />
+          <span>{t('dashboard')}</span>
+        </NavLink>
+        <NavLink to="/turbines" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <Fan size={18} />
+          <span>{t('turbines')}</span>
+        </NavLink>
+        <NavLink to="/alerts" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <div style={{ position: 'relative' }}>
+            <AlertTriangle size={18} />
+            {activeCount > 0 && <span className="mobile-nav-badge">{activeCount}</span>}
+          </div>
+          <span>{t('alarms')}</span>
+        </NavLink>
+      </nav>
     </div>
   );
 }

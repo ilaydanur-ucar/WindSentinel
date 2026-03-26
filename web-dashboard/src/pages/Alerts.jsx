@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
+import { useLanguage } from '../hooks/useLanguage';
 
 export default function Alerts() {
+  const { t, lang } = useLanguage();
   const [alerts, setAlerts] = useState([]);
   const [pagination, setPagination] = useState({});
   const [filter, setFilter] = useState('');
@@ -27,43 +29,45 @@ export default function Alerts() {
     catch (err) { alert(err.message); }
   };
 
+  const locale = lang === 'tr' ? 'tr-TR' : 'en-US';
+
   return (
     <>
       <div className="page-header">
-        <div className="page-title">Alarm Yönetimi</div>
-        <div className="page-sub">Anomali tespit sonuçları ve alarm geçmişi</div>
+        <div className="page-title">{t('alarmManagement')}</div>
+        <div className="page-sub">{t('anomalyResults')}</div>
       </div>
 
-      <div className="flex gap-2 mb-3" style={{ alignItems: 'center' }}>
-        {[['', 'Tümü'], ['active', 'Aktif'], ['resolved', 'İncelendi']].map(([f, label]) => (
+      <div className="flex gap-2 mb-3" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
+        {[['', t('allFilter')], ['active', t('activeFilter')], ['resolved', t('resolvedFilter')]].map(([f, label]) => (
           <button key={f} className={`btn btn-filter ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
             {label}
           </button>
         ))}
         <span className="text-muted text-sm" style={{ marginLeft: 'auto', fontFamily: "'JetBrains Mono', monospace" }}>
-          {pagination.total || 0} kayıt
+          {pagination.total || 0} {t('records')}
         </span>
       </div>
 
-      <div className="panel">
+      <div className="panel" style={{ overflowX: 'auto' }}>
         <table className="table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Türbin</th>
-              <th>Tür</th>
-              <th>Skor</th>
-              <th>Güven</th>
-              <th>Durum</th>
-              <th>Tarih</th>
-              <th>İşlem</th>
+              <th>{t('id')}</th>
+              <th>{t('turbine')}</th>
+              <th>{t('type')}</th>
+              <th>{t('score')}</th>
+              <th>{t('confidence')}</th>
+              <th>{t('status')}</th>
+              <th>{t('date')}</th>
+              <th>{t('action')}</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="empty-state">Yükleniyor...</td></tr>
+              <tr><td colSpan={8} className="empty-state">{t('loading')}</td></tr>
             ) : alerts.length === 0 ? (
-              <tr><td colSpan={8} className="empty-state">Alarm bulunamadı</td></tr>
+              <tr><td colSpan={8} className="empty-state">{t('notFound')}</td></tr>
             ) : alerts.map(a => {
               const score = Math.round(a.anomaly_score * 100);
               const severity = score > 85 ? 'crit' : score > 60 ? 'warn' : 'ok';
@@ -77,18 +81,18 @@ export default function Alerts() {
                   <td style={{ fontFamily: "'JetBrains Mono', monospace", color: a.confidence >= 0.85 ? 'var(--green)' : a.confidence >= 0.70 ? 'var(--amber)' : 'var(--red)' }}>{Math.round(a.confidence * 100)}%</td>
                   <td>
                     <span className={`badge-status badge-${a.status === 'active' ? 'crit' : 'resolved'}`}>
-                      {a.status === 'active' ? 'Aktif' : 'İncelendi'}
+                      {a.status === 'active' ? t('activeStatus') : t('resolvedStatus')}
                     </span>
                   </td>
-                  <td className="text-muted text-sm">{new Date(a.created_at).toLocaleString('tr-TR')}</td>
+                  <td className="text-muted text-sm">{new Date(a.created_at).toLocaleString(locale)}</td>
                   <td>
                     {a.status === 'active' ? (
                       <button className="btn btn-success btn-sm" onClick={() => handleResolve(a.id)}>
-                        <CheckCircle size={12} /> Çöz
+                        <CheckCircle size={12} /> {t('resolve')}
                       </button>
                     ) : (
                       <span className="text-muted text-sm">
-                        {a.resolved_at ? new Date(a.resolved_at).toLocaleString('tr-TR') : '—'}
+                        {a.resolved_at ? new Date(a.resolved_at).toLocaleString(locale) : '—'}
                       </span>
                     )}
                   </td>
