@@ -49,6 +49,77 @@ services:
   # MICROSERVICES
   # ─────────────────────────────────────────
 
+  data-simulator:
+    build: ./simulator
+    container_name: wind-sentinel-simulator
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      INTERVAL_SECONDS: ${SIMULATOR_INTERVAL_SECONDS:-600}
+      BATCH_SIZE: ${SIMULATOR_BATCH_SIZE:-10}
+      RABBITMQ_HOST: wind-sentinel-rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASS}
+      RABBITMQ_QUEUE: sensor-data
+    volumes:
+      - ./data:/data:ro
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+
+  data-consumer:
+    build: ./consumer
+    container_name: wind-sentinel-consumer
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      RABBITMQ_HOST: wind-sentinel-rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASS}
+      INPUT_QUEUE: sensor-data
+      OUTPUT_QUEUE: measurement.raw
+      EXCHANGE_NAME: wind.events
+      ROUTING_KEY: measurement.raw
+      PREFETCH_COUNT: 1
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DATA_SOURCE_TYPE: csv
+      DATA_FILE_PATH: /data/dataset.csv
+    volumes:
+      - ./data:/data:ro
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+
   data-ingestion-service:
     build: ./services/data-ingestion-service
     container_name: wind-sentinel-ingestion
